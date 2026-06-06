@@ -236,8 +236,6 @@ The CSV + Python layer is the auditable backend. The user-facing version should 
 - Approver view: accept, request rewrite, downgrade claim strength, or block.
 - Report view: weekly status, evidence ledger, risks, and deferred work.
 
-For a Bosch-style M365 implementation, this maps naturally to Power Apps or SharePoint lists plus Power Automate approval/reminder flows. For a GitHub demo, the same interface can start as a small Streamlit dashboard or static HTML mock.
-
 ## Literature Quality Gate 🧪
 
 Older papers are not automatically bad. Some older papers are foundational, so they are useful for explaining the background of a technique. The problem starts when a system uses an old or weakly related source as if it were current direct evidence for a new claim.
