@@ -65,9 +65,7 @@ This project is not a chatbot but a workflow control plane.
 
 Why it gets flagged:
 
-- It uses a catchy binary contrast.
-- It hides the actual mechanism.
-- It sounds stronger than the current evidence needs.
+- It uses a VERY AI and boring and annoying structure `not A but B` 
 
 Preferred rewrite:
 
