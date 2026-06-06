@@ -1,0 +1,5 @@
+task_id,agent_name,output_type,summary,needs_human_review
+T002,workflow_planner,process_map,"Drafted To-Be workflow with trigger, validation, approval, reminder, and reporting steps.",yes
+T003,reporting_agent,weekly_summary,"Summarized open tasks and identified approval blocker.",yes
+T004,analysis_agent,quality_check,"Prepared checklist for validating simulation outputs.",yes
+
