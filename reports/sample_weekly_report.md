@@ -52,6 +52,29 @@ Report date: 2026-06-06
 - T005 | Research Agent Quality Control | delivery_agent produced timebox_plan: Converted open-ended improvement into deadline-aware acceptance criteria and a shippable report state.
 - T006 | Research Agent Quality Control | literature_agent produced source_triage: Separated candidate search hits from accepted evidence by checking recency, venue decision status, source quality, and claim relevance.
 
+## Multi-Agent Delivery Gate
+- Relationship model: orchestrator owns workflow state; worker and reviewer agents produce bounded artifacts; human owner controls final approval.
+- H005 | task T002 | evidence_agent -> orchestrator_agent | return_to_manager | status: needs_revision | impact: blocks_broad_claim
+- H007 | task T004 | draft_agent -> critic_agent | peer_review | status: pending | impact: requires_independent_review
+- H008 | task T005 | orchestrator_agent -> delivery_agent | manager_call | status: pending | impact: enables_shipment_decision
+- H009 | task T005 | delivery_agent -> human_owner | human_approval | status: pending | impact: final_delivery_control
+
+## Agent Role Boundaries
+- orchestrator_agent | orchestrator | delegates: yes | self-approval: no | output: delivery_decision | approval boundary: human_owner
+- skill_agent | worker | delegates: no | self-approval: no | output: skill_checklist | approval boundary: orchestrator_agent
+- draft_agent | worker | delegates: no | self-approval: no | output: draft_artifact | approval boundary: critic_agent
+- literature_agent | worker | delegates: no | self-approval: no | output: literature_candidate_set | approval boundary: evidence_agent
+- evidence_agent | reviewer | delegates: no | self-approval: no | output: evidence_decision | approval boundary: orchestrator_agent
+- style_reviewer | reviewer | delegates: no | self-approval: no | output: style_review | approval boundary: orchestrator_agent
+- critic_agent | reviewer | delegates: no | self-approval: no | output: critique_record | approval boundary: orchestrator_agent
+- delivery_agent | delivery_owner | delegates: no | self-approval: no | output: delivery_package | approval boundary: human_owner
+- human_owner | approver | delegates: no | self-approval: yes | output: approval_decision | approval boundary: none
+
+## Delivery Handoff Trail
+- H005 | evidence_decision | evidence_agent -> orchestrator_agent (orchestrator) | status: needs_revision
+- H008 | gate_summary | orchestrator_agent -> delivery_agent (delivery_owner) | status: pending
+- H009 | delivery_package | delivery_agent -> human_owner (approver) | status: pending
+
 ## Blockers
 - T002: Need one more peer-reviewed source for broad method claim
 - T003: Contains not-A-but-B style phrasing

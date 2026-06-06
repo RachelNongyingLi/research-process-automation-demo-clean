@@ -17,6 +17,8 @@ def build_report(
     agent_outputs: list[dict[str, str]],
     claims: list[dict[str, str]],
     evidence: list[dict[str, str]],
+    agent_roles: list[dict[str, str]],
+    handoffs: list[dict[str, str]],
     report_date: date = DEMO_REPORT_DATE,
 ) -> str:
     status_counts = Counter(row["status"] for row in rows)
@@ -36,6 +38,7 @@ def build_report(
     evidence_by_claim: dict[str, list[dict[str, str]]] = {}
     for record in evidence:
         evidence_by_claim.setdefault(record["claim_id"], []).append(record)
+    role_lookup = {role["agent_name"]: role for role in agent_roles}
 
     unresolved_claims = [
         claim
@@ -72,6 +75,15 @@ def build_report(
         and 0 <= (
             datetime.strptime(row["due_date"], "%Y-%m-%d").date() - report_date
         ).days <= 3
+    ]
+    open_handoffs = [
+        handoff for handoff in handoffs
+        if handoff["status"] in {"pending", "needs_revision", "blocked"}
+    ]
+    delivery_handoffs = [
+        handoff for handoff in handoffs
+        if handoff["handoff_type"] in {"return_to_manager", "human_approval"}
+        or handoff["artifact_type"] in {"gate_summary", "delivery_package"}
     ]
 
     lines = [
@@ -191,6 +203,45 @@ def build_report(
     else:
         lines.append("- No agent outputs waiting for human review.")
 
+    lines.extend(["", "## Multi-Agent Delivery Gate"])
+    lines.append(
+        "- Relationship model: orchestrator owns workflow state; worker and reviewer "
+        "agents produce bounded artifacts; human owner controls final approval."
+    )
+    if open_handoffs:
+        for handoff in open_handoffs:
+            lines.append(
+                f"- {handoff['handoff_id']} | task {handoff['task_id']} | "
+                f"{handoff['from_agent']} -> {handoff['to_agent']} | "
+                f"{handoff['handoff_type']} | status: {handoff['status']} | "
+                f"impact: {handoff['delivery_impact']}"
+            )
+    else:
+        lines.append("- No open handoff issues.")
+
+    lines.extend(["", "## Agent Role Boundaries"])
+    for role in agent_roles:
+        lines.append(
+            f"- {role['agent_name']} | {role['role_type']} | "
+            f"delegates: {role['can_delegate']} | "
+            f"self-approval: {role['can_approve_own_output']} | "
+            f"output: {role['required_output']} | "
+            f"approval boundary: {role['approval_boundary']}"
+        )
+
+    lines.extend(["", "## Delivery Handoff Trail"])
+    if delivery_handoffs:
+        for handoff in delivery_handoffs:
+            receiver = role_lookup.get(handoff["to_agent"], {})
+            receiver_role = receiver.get("role_type", "unknown_role")
+            lines.append(
+                f"- {handoff['handoff_id']} | {handoff['artifact_type']} | "
+                f"{handoff['from_agent']} -> {handoff['to_agent']} "
+                f"({receiver_role}) | status: {handoff['status']}"
+            )
+    else:
+        lines.append("- No delivery handoffs recorded.")
+
     lines.extend(["", "## Blockers"])
     blockers = [row for row in rows if row.get("blocker", "").strip()]
     if blockers:
@@ -221,7 +272,9 @@ def main() -> None:
     agent_outputs = load_rows(project_root / "data" / "sample_agent_outputs.csv")
     claims = load_rows(project_root / "data" / "sample_claim_ledger.csv")
     evidence = load_rows(project_root / "data" / "sample_evidence_ledger.csv")
-    report = build_report(rows, agent_outputs, claims, evidence)
+    agent_roles = load_rows(project_root / "data" / "sample_agent_roles.csv")
+    handoffs = load_rows(project_root / "data" / "sample_handoff_ledger.csv")
+    report = build_report(rows, agent_outputs, claims, evidence, agent_roles, handoffs)
     output_path = project_root / "reports" / "sample_weekly_report.md"
     output_path.write_text(report, encoding="utf-8")
     print(f"Wrote {output_path}")

@@ -10,6 +10,7 @@ The repeated correction loop is the real cost. Each new task requires the same r
 - Separate observation, inference, recommendation, and limitation.
 - Avoid binary contrast rhetoric when a scoped, mechanism-based claim is better.
 - Do not let multiple agents simply polish toward the same style.
+- Do not let agent-to-agent handoffs hide ownership, preconditions, or approval rights.
 - Stop open-ended refinement when a smaller deadline-ready deliverable is needed.
 
 ## Core Problem
@@ -22,6 +23,7 @@ The workflow needs a quality-control layer that can:
 - Flag weak, unpublished, stale, rejected, unknown, or off-topic support.
 - Detect rhetorical patterns that make claims sound stronger than they are.
 - Rotate reviewer roles so the drafting agent does not approve itself.
+- Record typed handoffs between agents so ownership and delivery impact are visible.
 - Preserve deadline state and decide when to ship, revise, defer, or block.
 
 ## Target Users

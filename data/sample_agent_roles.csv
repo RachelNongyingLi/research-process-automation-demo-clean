@@ -1,0 +1,10 @@
+agent_name,role_type,primary_responsibility,can_delegate,can_approve_own_output,required_input,required_output,approval_boundary
+orchestrator_agent,orchestrator,"Maintains task state, selects the next gate, and packages the final delivery decision.",yes,no,task_record,delivery_decision,human_owner
+skill_agent,worker,"Converts repeated research expectations into task-specific checklists.",no,no,task_record,skill_checklist,orchestrator_agent
+draft_agent,worker,"Produces the first bounded draft or analysis artifact.",no,no,skill_checklist,draft_artifact,critic_agent
+literature_agent,worker,"Collects candidate literature and labels recency venue decision quality and relevance.",no,no,claim_record,literature_candidate_set,evidence_agent
+evidence_agent,reviewer,"Promotes acceptable source candidates into evidence records and blocks weak support.",no,no,literature_candidate_set,evidence_decision,orchestrator_agent
+style_reviewer,reviewer,"Flags overclaiming binary contrast and unsupported certainty.",no,no,draft_artifact,style_review,orchestrator_agent
+critic_agent,reviewer,"Runs skeptical review against acceptance criteria and unresolved assumptions.",no,no,draft_artifact,critique_record,orchestrator_agent
+delivery_agent,delivery_owner,"Freezes the shippable version, records deferred work, and prepares the report state.",no,no,gate_summary,delivery_package,human_owner
+human_owner,approver,"Approves, requests revision, downgrades, or blocks final delivery.",no,yes,delivery_package,approval_decision,none

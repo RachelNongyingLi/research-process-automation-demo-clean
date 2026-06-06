@@ -10,6 +10,7 @@ You ask an agent for research help. It gives you something polished. Maybe even 
 - "Do not write `not A but B`; qualify the contrast."
 - "This sounds good, but what is the evidence?"
 - "Why are three agents all polishing toward the same vibe?"
+- "Which agent is responsible now, and who is allowed to approve the final output?"
 - "The deadline is tomorrow. Stop exploring and ship the useful version."
 
 This repository turns that repeated correction loop into a small, auditable workflow.
@@ -30,13 +31,14 @@ LLM agents are fast, but research delivery has standards that fluency alone does
 | Weak evidence | The agent cites memory, vague sources, or unpublished material | Formal evidence gate |
 | Literature noise | Search returns old, unaccepted, rejected, or weakly relevant papers | Literature quality gate |
 | Rhetorical drift | The prose keeps using catchy but weak frames | Style rule checker |
-| Model-aesthetic convergence | Multiple agents agree because they share the same taste | Rotating reviewer roles |
+| Multi-agent ambiguity | Agents talk, but ownership, handoffs, and delivery authority are unclear | Role registry + handoff ledger |
+| Model-aesthetic convergence | Multiple agents agree because they share the same taste | Independent reviewer roles |
 | Deadline blindness | The system keeps refining when you need a shippable artifact | Deadline readiness state |
 
 The core move:
 
 ```text
-agent draft -> claim ledger -> literature triage -> evidence gate -> style gate -> reviewer loop -> deadline-ready artifact
+agent draft -> typed handoff -> claim ledger -> literature triage -> evidence gate -> style gate -> delivery approval
 ```
 
 ## Why Skills Matter 🧠
@@ -110,6 +112,10 @@ End-to-end workflow:
 
 ![Research-agent quality gate workflow overview](docs/assets/workflow-overview.svg)
 
+Agent-to-agent relationships:
+
+![Multi-agent relationship topology](docs/assets/multi-agent-topology.svg)
+
 Literature search is treated as a candidate-generation step, not as automatic evidence:
 
 ![Literature quality gate matrix](docs/assets/literature-quality-matrix.svg)
@@ -131,6 +137,7 @@ flowchart LR
     C["Draft Agent<br/>first useful version"]
     D["Evidence Agent<br/>source finding"]
     E["Critic Agent<br/>independent review"]
+    O["Orchestrator Agent<br/>state owner + router"]
   end
 
   subgraph gates["🟧 Quality Gates"]
@@ -152,11 +159,13 @@ flowchart LR
 
   N["🟥 Escalation Queue<br/>missing evidence / deadline risk"]
 
-  A --> B --> C --> F
+  A --> B --> O --> C --> F
   C --> D --> G
   C --> E --> I
+  D --> O
+  E --> O
   E --> F
-  F --> G --> H --> I --> J
+  F --> G --> H --> I --> O --> J
   J -->|ready| K
   J -->|risky| N --> K
   K --> L --> M
@@ -170,7 +179,7 @@ flowchart LR
   classDef risk fill:#fee2e2,stroke:#dc2626,color:#111827,stroke-width:2px;
 
   class A,B intake;
-  class C,D,E agent;
+  class C,D,E,O agent;
   class F,G,H,I gate;
   class J,K delivery;
   class L,M ui;
@@ -185,9 +194,12 @@ flowchart LR
 | Agent output log | Task-linked agent artifacts | `data/sample_agent_outputs.csv` |
 | Claim ledger | Drafted claims vs. accepted claims | `data/sample_claim_ledger.csv` |
 | Evidence ledger | Candidate sources, formal evidence, venue status, recency, quality, and relevance | `data/sample_evidence_ledger.csv` |
+| Agent role registry | Agent responsibilities, permissions, required inputs, outputs, and approval boundary | `data/sample_agent_roles.csv` |
+| Handoff ledger | Agent-to-agent transfer contracts, status, preconditions, and delivery impact | `data/sample_handoff_ledger.csv` |
 | Validator | Schema, enums, joins, date checks, and style flags | `scripts/validate_task_fields.py` |
 | Readiness report | Evidence, literature quality, rhetoric, deadline, and review queues | `scripts/generate_progress_report.py` |
 | Design note | Quality-control workflow and acceptance criteria | `docs/quality_control_design.md` |
+| Orchestration design | Multi-agent relationships, handoff contracts, and delivery authority | `docs/agent_orchestration_design.md` |
 | Interface blueprint | Minimal dashboard/approval console for the workflow | `docs/interface_blueprint.md` |
 
 ## Data Model 🗂️
@@ -195,6 +207,11 @@ flowchart LR
 ```text
 task_id
   -> agent outputs
+  -> handoff_id
+      -> from_agent
+      -> to_agent
+      -> artifact_type
+      -> acceptance_check
   -> claim_id
       -> evidence_id
       -> literature quality status
@@ -225,6 +242,32 @@ Literature candidates are tracked separately from accepted evidence:
 - `relevance_status`: `direct`, `indirect`, `background`, `contradictory`, or `off_topic`
 
 That distinction matters because an agent can search successfully and still return sources that should not support a claim.
+
+## Multi-Agent Delivery Model 🤝
+
+This project uses a conservative manager-style topology:
+
+- `orchestrator_agent` owns workflow state and routes work.
+- Worker agents produce bounded artifacts, such as checklists, drafts, and source candidate sets.
+- Reviewer agents judge specific risks: evidence, style, and skeptical critique.
+- `delivery_agent` packages what can ship by the deadline.
+- `human_owner` is the only final approval boundary.
+
+Every agent-to-agent transfer is recorded in `data/sample_handoff_ledger.csv`. A handoff must state the sender, receiver, artifact, precondition, acceptance check, status, and delivery impact. This keeps multi-agent interaction auditable instead of turning it into invisible chat history.
+
+## What We Borrow From Current Multi-Agent Projects 🔭
+
+The pattern is inspired by current orchestration projects, but narrowed for research delivery:
+
+| Project pattern | What it does | What we use |
+| --- | --- | --- |
+| [OpenAI Agents SDK orchestration](https://openai.github.io/openai-agents-python/multi_agent/) | Distinguishes manager-style agents-as-tools from handoffs. | Manager keeps final state; specialists handle bounded subtasks. |
+| [LangGraph handoffs](https://docs.langchain.com/oss/python/langchain/multi-agent/handoffs) | Uses stateful transitions and persistent state between agents. | Handoffs update explicit task state instead of relying on prompt memory. |
+| [CrewAI collaboration](https://docs.crewai.com/en/concepts/collaboration) | Uses roles, delegation, sequential/hierarchical processes, and manager coordination. | Roles are explicit; specialists do not approve their own work. |
+| [Microsoft Agent Framework workflows](https://learn.microsoft.com/en-us/agent-framework/workflows/) | Separates workflows from agents and supports type-safe orchestration, HITL, checkpointing, and multi-agent patterns. | Workflow owns business state; agents are components inside the process. |
+| [Microsoft Agent Framework handoff UI demo](https://devblogs.microsoft.com/agent-framework/ag-ui-multi-agent-workflow-demo/) | Shows why users need visibility into active agent, waiting state, and approval pauses. | Interface shows gate status, handoff status, and approval queue. |
+
+The point is not to copy a heavy framework. The point is to import the discipline: explicit topology, typed artifacts, visible state, and approval boundaries.
 
 ## Interface Direction 🖥️
 

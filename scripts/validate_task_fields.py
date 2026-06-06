@@ -52,6 +52,31 @@ REQUIRED_EVIDENCE_FIELDS = [
     "relevance_status",
 ]
 
+REQUIRED_AGENT_ROLE_FIELDS = [
+    "agent_name",
+    "role_type",
+    "primary_responsibility",
+    "can_delegate",
+    "can_approve_own_output",
+    "required_input",
+    "required_output",
+    "approval_boundary",
+]
+
+REQUIRED_HANDOFF_FIELDS = [
+    "handoff_id",
+    "task_id",
+    "from_agent",
+    "to_agent",
+    "handoff_type",
+    "artifact_id",
+    "artifact_type",
+    "precondition",
+    "acceptance_check",
+    "status",
+    "delivery_impact",
+]
+
 VALID_STATUSES = {"not_started", "in_progress", "blocked", "done"}
 VALID_APPROVAL_FLAGS = {"yes", "no"}
 VALID_APPROVAL_STATUSES = {"not_required", "pending", "approved", "rejected"}
@@ -95,6 +120,27 @@ VALID_RELEVANCE_STATUSES = {
     "contradictory",
     "off_topic",
 }
+VALID_ROLE_TYPES = {
+    "orchestrator",
+    "worker",
+    "reviewer",
+    "delivery_owner",
+    "approver",
+}
+VALID_HANDOFF_TYPES = {
+    "manager_call",
+    "sequential",
+    "peer_review",
+    "return_to_manager",
+    "human_approval",
+}
+VALID_HANDOFF_STATUSES = {
+    "accepted",
+    "pending",
+    "needs_revision",
+    "blocked",
+    "rejected",
+}
 
 BINARY_CONTRAST_PATTERNS = [
     re.compile(r"\bnot\b.{0,80}\bbut\b", re.IGNORECASE),
@@ -126,6 +172,8 @@ def validate_tasks(
     agent_csv_path: Path | None = None,
     claim_csv_path: Path | None = None,
     evidence_csv_path: Path | None = None,
+    agent_roles_csv_path: Path | None = None,
+    handoff_csv_path: Path | None = None,
 ) -> list[str]:
     issues: list[str] = []
     rows = load_rows(task_csv_path)
@@ -166,6 +214,7 @@ def validate_tasks(
         if priority and priority not in VALID_PRIORITIES:
             issues.append(f"Row {row_number}: unknown priority '{priority}'")
 
+    agent_output_names: list[tuple[int, str]] = []
     if agent_csv_path is not None:
         agent_rows = load_rows(agent_csv_path)
         for row_number, row in enumerate(agent_rows, start=2):
@@ -181,10 +230,68 @@ def validate_tasks(
                     f"Agent row {row_number}: task_id '{task_id}' is not in task tracker"
                 )
 
+            agent_name = row.get("agent_name", "").strip()
+            if agent_name:
+                agent_output_names.append((row_number, agent_name))
+
             needs_review = row.get("needs_human_review", "").strip().lower()
             if needs_review and needs_review not in VALID_APPROVAL_FLAGS:
                 issues.append(
                     f"Agent row {row_number}: needs_human_review must be yes or no"
+                )
+
+    agent_registry: dict[str, dict[str, str]] = {}
+    if agent_roles_csv_path is not None:
+        agent_role_rows = load_rows(agent_roles_csv_path)
+        for row_number, row in enumerate(agent_role_rows, start=2):
+            for field in REQUIRED_AGENT_ROLE_FIELDS:
+                if not row.get(field, "").strip():
+                    issues.append(
+                        f"Agent role row {row_number}: missing required field '{field}'"
+                    )
+
+            agent_name = row.get("agent_name", "").strip()
+            if agent_name in agent_registry:
+                issues.append(
+                    f"Agent role row {row_number}: duplicate agent_name '{agent_name}'"
+                )
+            agent_registry[agent_name] = row
+
+            role_type = row.get("role_type", "").strip().lower()
+            if role_type and role_type not in VALID_ROLE_TYPES:
+                issues.append(
+                    f"Agent role row {row_number}: unknown role_type '{role_type}'"
+                )
+
+            can_delegate = row.get("can_delegate", "").strip().lower()
+            if can_delegate and can_delegate not in VALID_APPROVAL_FLAGS:
+                issues.append(
+                    f"Agent role row {row_number}: can_delegate must be yes or no"
+                )
+
+            can_approve_own_output = (
+                row.get("can_approve_own_output", "").strip().lower()
+            )
+            if (
+                can_approve_own_output
+                and can_approve_own_output not in VALID_APPROVAL_FLAGS
+            ):
+                issues.append(
+                    f"Agent role row {row_number}: can_approve_own_output must be "
+                    "yes or no"
+                )
+
+            if role_type in {"worker", "reviewer"} and can_approve_own_output == "yes":
+                issues.append(
+                    f"Agent role row {row_number}: worker/reviewer agents cannot "
+                    "approve their own output"
+                )
+
+        for row_number, agent_name in agent_output_names:
+            if agent_name not in agent_registry:
+                issues.append(
+                    f"Agent row {row_number}: agent_name '{agent_name}' is not in "
+                    "agent role registry"
                 )
 
     seen_claim_ids: set[str] = set()
@@ -368,6 +475,85 @@ def validate_tasks(
                     f"Evidence row {row_number}: rejected sources cannot be verified"
                 )
 
+    if handoff_csv_path is not None:
+        handoff_rows = load_rows(handoff_csv_path)
+        seen_handoff_ids: set[str] = set()
+        for row_number, row in enumerate(handoff_rows, start=2):
+            for field in REQUIRED_HANDOFF_FIELDS:
+                if not row.get(field, "").strip():
+                    issues.append(
+                        f"Handoff row {row_number}: missing required field '{field}'"
+                    )
+
+            handoff_id = row.get("handoff_id", "").strip()
+            if handoff_id in seen_handoff_ids:
+                issues.append(
+                    f"Handoff row {row_number}: duplicate handoff_id '{handoff_id}'"
+                )
+            seen_handoff_ids.add(handoff_id)
+
+            task_id = row.get("task_id", "").strip()
+            if task_id and task_id not in seen_task_ids:
+                issues.append(
+                    f"Handoff row {row_number}: task_id '{task_id}' is not in task tracker"
+                )
+
+            from_agent = row.get("from_agent", "").strip()
+            to_agent = row.get("to_agent", "").strip()
+            if from_agent and from_agent not in agent_registry:
+                issues.append(
+                    f"Handoff row {row_number}: from_agent '{from_agent}' is not in "
+                    "agent role registry"
+                )
+            if to_agent and to_agent not in agent_registry:
+                issues.append(
+                    f"Handoff row {row_number}: to_agent '{to_agent}' is not in "
+                    "agent role registry"
+                )
+
+            if from_agent == to_agent:
+                issues.append(
+                    f"Handoff row {row_number}: from_agent and to_agent must differ"
+                )
+
+            handoff_type = row.get("handoff_type", "").strip().lower()
+            if handoff_type and handoff_type not in VALID_HANDOFF_TYPES:
+                issues.append(
+                    f"Handoff row {row_number}: unknown handoff_type '{handoff_type}'"
+                )
+
+            status = row.get("status", "").strip().lower()
+            if status and status not in VALID_HANDOFF_STATUSES:
+                issues.append(
+                    f"Handoff row {row_number}: unknown status '{status}'"
+                )
+
+            from_role = agent_registry.get(from_agent, {})
+            to_role = agent_registry.get(to_agent, {})
+            if handoff_type == "manager_call" and from_role.get("role_type") != "orchestrator":
+                issues.append(
+                    f"Handoff row {row_number}: manager_call must start from an "
+                    "orchestrator"
+                )
+            if handoff_type == "human_approval" and to_role.get("role_type") != "approver":
+                issues.append(
+                    f"Handoff row {row_number}: human_approval must hand off to an "
+                    "approver"
+                )
+            if handoff_type == "peer_review" and to_role.get("role_type") != "reviewer":
+                issues.append(
+                    f"Handoff row {row_number}: peer_review must hand off to a reviewer"
+                )
+            if (
+                row.get("artifact_type", "").strip().lower() == "delivery_package"
+                and status == "accepted"
+                and to_role.get("role_type") != "approver"
+            ):
+                issues.append(
+                    f"Handoff row {row_number}: accepted delivery packages require "
+                    "an approver boundary"
+                )
+
     return issues
 
 
@@ -377,11 +563,15 @@ def main() -> None:
     agent_csv_path = project_root / "data" / "sample_agent_outputs.csv"
     claim_csv_path = project_root / "data" / "sample_claim_ledger.csv"
     evidence_csv_path = project_root / "data" / "sample_evidence_ledger.csv"
+    agent_roles_csv_path = project_root / "data" / "sample_agent_roles.csv"
+    handoff_csv_path = project_root / "data" / "sample_handoff_ledger.csv"
     issues = validate_tasks(
         task_csv_path,
         agent_csv_path,
         claim_csv_path,
         evidence_csv_path,
+        agent_roles_csv_path,
+        handoff_csv_path,
     )
 
     if not issues:

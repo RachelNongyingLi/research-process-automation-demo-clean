@@ -10,6 +10,8 @@ flowchart LR
   B --> C["Task tracker\nExcel or SharePoint"]
   C --> D["Python validation\nscripts/validate_task_fields.py"]
   C --> E["Agent modules\nanalysis and summarization"]
+  E --> K["Handoff ledger\nagent-to-agent contracts"]
+  K --> C
   D --> B
   E --> C
   C --> F["Python reporting\nscripts/generate_progress_report.py"]
@@ -51,6 +53,13 @@ Example agent module responsibilities:
 - Convert raw research output into tracker-ready fields.
 
 The sample `data/sample_agent_outputs.csv` represents this boundary. Each output is tied to a `task_id`, an `agent_name`, an `output_type`, a short `summary`, and a `needs_human_review` flag. The agent does not independently close the task or approve its own output; those decisions remain part of the workflow.
+
+The multi-agent boundary is now represented by two additional ledgers:
+
+- `data/sample_agent_roles.csv`: role registry for each agent, including delegation rights, required input, required output, and approval boundary.
+- `data/sample_handoff_ledger.csv`: typed handoff events between agents, including preconditions, acceptance checks, status, and delivery impact.
+
+This follows the same state-control principle as the rest of the architecture. Agent-to-agent communication is allowed, but it is recorded as a workflow event rather than treated as hidden conversation history.
 
 ## Task State Model
 
@@ -151,6 +160,8 @@ In a production version, Power Automate would trigger the reporting run on a wee
 | Date parsing failure | Inconsistent date formats across channels | Normalize dates at intake and validate ISO `YYYY-MM-DD` format. |
 | Lost workflow execution context | Flow succeeds partially but tracker update fails | Record `workflow_run_id`, step status, and retry result in an audit log. |
 | Human review bypassed | Agent output marked final without review | Require `needs_human_review` and review status before report inclusion. |
+| Agent ownership ambiguity | Multiple agents produce related outputs without clear responsibility | Maintain an agent role registry and handoff ledger with explicit sender, receiver, artifact, and acceptance checks. |
+| Self-approval loop | Drafting or reviewer agent accepts its own output | Validate role boundaries and require final delivery approval from `human_owner`. |
 
 ## Power Automate vs. Python
 

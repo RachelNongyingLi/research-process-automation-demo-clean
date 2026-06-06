@@ -1,0 +1,10 @@
+handoff_id,task_id,from_agent,to_agent,handoff_type,artifact_id,artifact_type,precondition,acceptance_check,status,delivery_impact
+H001,T001,orchestrator_agent,skill_agent,manager_call,T001,task_record,"task fields valid","checklist contains claim evidence style review and deadline rules",accepted,enables_drafting
+H002,T001,skill_agent,draft_agent,sequential,T001,skill_checklist,"checklist accepted by orchestrator","draft follows checklist and stays within requested scope",accepted,enables_claim_extraction
+H003,T006,draft_agent,literature_agent,sequential,C006,claim_record,"claim requires formal publication evidence","candidate sources include recency venue quality and relevance labels",accepted,enables_literature_triage
+H004,T006,literature_agent,evidence_agent,sequential,C006,literature_candidate_set,"candidate source labels complete","weak stale rejected or off-topic sources are blocked",accepted,enables_evidence_review
+H005,T002,evidence_agent,orchestrator_agent,return_to_manager,C002,evidence_decision,"source status checked","claim is marked verified partial missing or blocked",needs_revision,blocks_broad_claim
+H006,T003,draft_agent,style_reviewer,sequential,C003,draft_artifact,"draft contains material claim","binary contrast and overclaim patterns are flagged",accepted,enables_rewrite
+H007,T004,draft_agent,critic_agent,peer_review,C004,draft_artifact,"drafting agent cannot approve its own claim","critic records assumptions disagreement and unresolved risks",pending,requires_independent_review
+H008,T005,orchestrator_agent,delivery_agent,manager_call,T005,gate_summary,"deadline state exists","delivery package labels accepted partial deferred and blocked items",pending,enables_shipment_decision
+H009,T005,delivery_agent,human_owner,human_approval,T005,delivery_package,"delivery package prepared","human owner accepts revises downgrades or blocks final artifact",pending,final_delivery_control

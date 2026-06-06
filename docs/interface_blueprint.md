@@ -30,6 +30,7 @@ flowchart LR
 | --- | --- | --- |
 | Task Intake | What needs to be produced, by whom, and by when? | `data/sample_research_tasks.csv` |
 | Agent Output Review | What did the agent produce, and does it need human review? | `data/sample_agent_outputs.csv` |
+| Active Agent / Handoff Trail | Which agent owns the next step, and why did the handoff happen? | `data/sample_agent_roles.csv`, `data/sample_handoff_ledger.csv` |
 | Claim Gate | Which claims are approved, provisional, blocked, or too strong? | `data/sample_claim_ledger.csv` |
 | Literature Triage | Which search hits are stale, unaccepted, rejected, weak, or off-topic? | `data/sample_evidence_ledger.csv` |
 | Approval Panel | What decision should the human owner make now? | task + claim + evidence ledgers |
@@ -43,6 +44,7 @@ For a Bosch-style Microsoft 365 workflow, the interface can be:
 - Power Apps form for task intake and approval decisions.
 - Power Automate flow for reminders, approvals, escalations, and report generation.
 - Power BI dashboard for status, blockers, and source-quality risk.
+- A handoff trail view showing sender, receiver, artifact, precondition, and acceptance check.
 
 ## GitHub Demo Version
 

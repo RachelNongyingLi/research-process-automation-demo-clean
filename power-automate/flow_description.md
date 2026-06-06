@@ -18,22 +18,25 @@ The workflow starts when a new research task, agent output, or report draft is s
    - Notes
 2. Create or update the task tracker.
 3. Select the relevant skill checklist.
-4. Register material claims in the claim ledger.
-5. Register candidate literature hits separately from accepted evidence.
-6. Check recency, venue decision status, source quality, and claim relevance.
-7. Attach accepted evidence records or mark evidence as missing.
-8. Route stale, rejected, unknown, weak, or off-topic sources to the literature reviewer.
-9. Route claims with partial or missing evidence to the evidence reviewer.
-10. Route binary contrast, overclaim, or vague certainty flags to the style reviewer.
-11. Route high-risk or approval-required claims to the supervisor.
-12. Send deadline reminders when unresolved quality gates are close to due date.
-13. Generate a readiness report showing accepted, revised, deferred, and blocked items.
+4. Resolve the responsible agent role from the agent role registry.
+5. Record each agent-to-agent transfer in the handoff ledger.
+6. Register material claims in the claim ledger.
+7. Register candidate literature hits separately from accepted evidence.
+8. Check recency, venue decision status, source quality, and claim relevance.
+9. Attach accepted evidence records or mark evidence as missing.
+10. Route stale, rejected, unknown, weak, or off-topic sources to the literature reviewer.
+11. Route claims with partial or missing evidence to the evidence reviewer.
+12. Route binary contrast, overclaim, or vague certainty flags to the style reviewer.
+13. Route high-risk or approval-required delivery packages to the human owner.
+14. Send deadline reminders when unresolved quality gates are close to due date.
+15. Generate a readiness report showing accepted, revised, deferred, and blocked items.
 
 ## Output
 
 - Updated task tracker
 - Claim ledger entries
 - Evidence and literature-candidate ledger entries
+- Agent role and handoff ledger entries
 - Style and overclaim flags
 - Reviewer decisions
 - Deadline readiness status
