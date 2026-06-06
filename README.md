@@ -100,19 +100,54 @@ The generated readiness report answers:
 - Which agent outputs require human review?
 - Which formal sources support which claims?
 
-## Workflow 🧩
+## Module Map 🌈
 
 ```mermaid
-flowchart TD
-  A["Research task"] --> B["Skill checklist"]
-  B --> C["Agent draft or analysis"]
-  C --> D["Claim ledger"]
-  D --> E["Formal evidence gate"]
-  E --> F["Rhetorical rule checker"]
-  F --> G["Rotating reviewer loop"]
-  G --> H["Deadline readiness check"]
-  H --> I["Accepted deliverable"]
-  H --> J["Revision / partial delivery / blocked"]
+flowchart LR
+  subgraph intake["🟦 Intake Layer"]
+    A["Research Task<br/>CSV / email / Teams"]
+    B["Skill Checklist<br/>rules before drafting"]
+  end
+
+  subgraph workbench["🟪 Agent Workbench"]
+    C["Draft Agent<br/>first useful version"]
+    D["Evidence Agent<br/>source finding"]
+    E["Critic Agent<br/>independent review"]
+  end
+
+  subgraph gates["🟧 Quality Gates"]
+    F["Claim Ledger<br/>scope + strength"]
+    G["Formal Evidence Gate<br/>published source check"]
+    H["Style Gate<br/>overclaim + phrasing"]
+  end
+
+  subgraph delivery["🟩 Delivery Control"]
+    I["Deadline Readiness<br/>ship / revise / block"]
+    J["Weekly Report<br/>transparent status"]
+  end
+
+  K["🟥 Escalation Queue<br/>missing evidence / deadline risk"]
+
+  A --> B --> C --> F
+  C --> D --> G
+  C --> E --> H
+  E --> F
+  F --> G --> H --> I
+  I -->|ready| J
+  I -->|risky| K --> J
+  J -. next cycle .-> B
+
+  classDef intake fill:#dbeafe,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+  classDef agent fill:#ede9fe,stroke:#7c3aed,color:#111827,stroke-width:2px;
+  classDef gate fill:#fed7aa,stroke:#ea580c,color:#111827,stroke-width:2px;
+  classDef delivery fill:#dcfce7,stroke:#16a34a,color:#111827,stroke-width:2px;
+  classDef risk fill:#fee2e2,stroke:#dc2626,color:#111827,stroke-width:2px;
+
+  class A,B intake;
+  class C,D,E agent;
+  class F,G,H gate;
+  class I,J delivery;
+  class K risk;
 ```
 
 ## Project Pieces 📦
@@ -188,4 +223,3 @@ In other words: make the hidden review loop visible.
 - Add a Power Automate flow export for intake, approval, reminders, and escalation.
 - Add a reviewer-rotation log so critique roles cannot approve their own drafts.
 - Add acceptance-status fields for `accepted`, `accepted_with_limits`, `partial`, `needs_revision`, `blocked`, and `rejected`.
-
