@@ -1,44 +1,58 @@
-# Research-Agent Quality Control Workflow
+# Research-Agent Quality Gate 🚦
 
-**A deadline-aware quality gate for LLM-generated research artifacts.**
+**Tired of AI agents that sound brilliant, cite vaguely, overclaim confidently, and still miss the actual research deliverable?**
 
-LLM agents can draft quickly, search broadly, and make rough progress across many research tasks. The failure mode is subtler: the output often looks finished before it is actually acceptable. It may overclaim, rely on weak or unpublished evidence, repeat a rhetorically attractive sentence pattern, drift toward the model's preferred style, or keep iterating past the point where a deadline-ready artifact is needed.
+You ask an agent for research help. It gives you something polished. Maybe even elegant. Then the real review starts:
 
-This project prototypes a small control workflow for that problem. Agents produce drafts and intermediate artifacts; the workflow checks whether those artifacts satisfy research expectations before they become accepted claims, report sections, or project decisions.
+- "Please do not overclaim."
+- "Use formally published papers, not generic web memory."
+- "Do not write `not A but B`; qualify the contrast."
+- "This sounds good, but what is the evidence?"
+- "Why are three agents all polishing toward the same vibe?"
+- "The deadline is tomorrow. Stop exploring and ship the useful version."
 
-## Core Problem
+This repository turns that repeated correction loop into a small, auditable workflow.
 
-The project is built around six recurring failures in agent-assisted research work:
+Agents can draft. Agents can search. Agents can critique.  
+But before an output becomes a research claim, report section, or project decision, it must pass **claim**, **evidence**, **style**, **review**, and **deadline** gates.
 
-| Failure | What it looks like | Control mechanism |
+> Pretty output is not the same as accepted research output.
+
+## The Pain 🔥
+
+LLM agents are fast, but research delivery has standards that fluency alone does not satisfy.
+
+| Failure | What it feels like | Gate |
 | --- | --- | --- |
-| Expectation mismatch | The answer is fluent but ignores local research rules | Skill checklist |
-| Overclaiming | The statement is stronger than the evidence | Claim ledger |
-| Weak evidence | The claim cites memory, generic web text, or an unpublished source | Formal evidence gate |
-| Rhetorical pattern drift | The agent repeats attractive but weak frames such as binary contrast | Style rule checker |
-| Model-aesthetic convergence | Multiple agents polish toward the same taste instead of challenging assumptions | Rotating reviewer roles |
-| Deadline blindness | The system keeps improving prose instead of shipping a usable artifact | Deadline-ready delivery state |
+| Expectation mismatch | The answer is fluent but ignores your actual research rules | Skill checklist |
+| Overclaiming | A narrow observation becomes a broad method claim | Claim ledger |
+| Weak evidence | The agent cites memory, vague sources, or unpublished material | Formal evidence gate |
+| Rhetorical drift | The prose keeps using catchy but weak frames | Style rule checker |
+| Model-aesthetic convergence | Multiple agents agree because they share the same taste | Rotating reviewer roles |
+| Deadline blindness | The system keeps refining when you need a shippable artifact | Deadline readiness state |
 
-The key idea:
+The core move:
 
-> A polished agent output is provisional until it passes claim, evidence, style, review, and deadline gates.
+```text
+agent draft -> claim ledger -> evidence gate -> style gate -> reviewer loop -> deadline-ready artifact
+```
 
-## Why Skills Exist Here
+## Why Skills Matter 🧠
 
-Skills are not decorative prompts. In this project, a skill is a reusable operating procedure for a task family whose requirements the base LLM does not reliably satisfy by default.
+Skills are not just longer prompts. In this project, a skill is a reusable operating procedure for expectations the base LLM does not reliably satisfy by default.
 
-Examples:
+A good research-agent skill should encode rules like:
 
-- Do not turn a narrow observation into a general method claim.
-- Use formally published sources for method claims.
+- Do not turn a narrow result into a general conclusion.
+- Use formally published evidence for method claims.
 - Separate observation, inference, recommendation, and limitation.
 - Preserve uncertainty when evidence is partial.
-- Avoid a binary "not A but B" frame when the stronger research form is a scoped contrast.
+- Avoid binary contrast when a scoped mechanism claim is more accurate.
 - Stop expanding the answer when the deadline requires a smaller truthful deliverable.
 
-The workflow converts those expectations into checks that can be repeated every time, instead of rediscovering the same corrections in every conversation.
+The point is to stop retyping the same corrections in every conversation.
 
-## Example Style Gate
+## Example: The Sentence That Looks Good But Fails Review ✍️
 
 Risky draft:
 
@@ -46,32 +60,24 @@ Risky draft:
 This project is not a chatbot but a workflow control plane.
 ```
 
-Preferred research-style rewrite:
+Why it gets flagged:
+
+- It uses a catchy binary contrast.
+- It hides the actual mechanism.
+- It sounds stronger than the current evidence needs.
+
+Preferred rewrite:
 
 ```text
 Although chatbot-style agents can produce useful drafts, research delivery also requires persistent task state, evidence checks, reviewer decisions, and deadline-aware acceptance criteria; this project therefore treats the agent as a contributor inside a workflow control layer.
 ```
 
-The rewrite is longer, but it is more useful: it explains why the tempting claim exists, what additional mechanism changes the conclusion, and what scope the final claim has.
+Less punchy? Yes.  
+More research-usable? Also yes.
 
-## Workflow
+## What This Demo Actually Runs ⚙️
 
-```mermaid
-flowchart TD
-  A["Research task"] --> B["Skill checklist"]
-  B --> C["Agent draft or analysis"]
-  C --> D["Claim ledger"]
-  D --> E["Formal evidence gate"]
-  E --> F["Rhetorical rule checker"]
-  F --> G["Rotating reviewer loop"]
-  G --> H["Deadline readiness check"]
-  H --> I["Accepted deliverable"]
-  H --> J["Revision / partial delivery / blocked"]
-```
-
-## Runnable Demo
-
-The local demo uses CSV ledgers and Python scripts to simulate the workflow.
+The local demo uses CSV ledgers and Python scripts to simulate the gates.
 
 ```bash
 python3 scripts/validate_task_fields.py
@@ -87,28 +93,41 @@ Wrote .../reports/sample_weekly_report.md
 
 The generated readiness report answers:
 
-- Which tasks are close to deadline?
 - Which claims are still provisional?
-- Which claims have partial or missing evidence?
-- Which sentences need rhetorical rewriting?
+- Which claims need stronger evidence?
+- Which phrases need rewriting?
+- Which artifacts are risky near deadline?
 - Which agent outputs require human review?
-- Which claims are supported by verified formal sources?
+- Which formal sources support which claims?
 
-## Implemented Artifacts
+## Workflow 🧩
+
+```mermaid
+flowchart TD
+  A["Research task"] --> B["Skill checklist"]
+  B --> C["Agent draft or analysis"]
+  C --> D["Claim ledger"]
+  D --> E["Formal evidence gate"]
+  E --> F["Rhetorical rule checker"]
+  F --> G["Rotating reviewer loop"]
+  G --> H["Deadline readiness check"]
+  H --> I["Accepted deliverable"]
+  H --> J["Revision / partial delivery / blocked"]
+```
+
+## Project Pieces 📦
 
 | Layer | Purpose | File |
 | --- | --- | --- |
-| Task tracker | Tracks owner, status, deadline, approval, and blocker state | `data/sample_research_tasks.csv` |
-| Agent output log | Stores agent outputs as task-linked artifacts | `data/sample_agent_outputs.csv` |
-| Claim ledger | Separates drafted claims from accepted claims | `data/sample_claim_ledger.csv` |
-| Evidence ledger | Links claims to formally published sources or project evidence | `data/sample_evidence_ledger.csv` |
-| Structural validation | Checks schema, enums, task joins, claim joins, dates, and style flags | `scripts/validate_task_fields.py` |
-| Readiness report | Produces evidence, rhetoric, deadline, and review queues | `scripts/generate_progress_report.py` |
-| Design note | Specifies quality-control workflow and acceptance criteria | `docs/quality_control_design.md` |
+| Task tracker | Owner, status, deadline, approval, and blocker state | `data/sample_research_tasks.csv` |
+| Agent output log | Task-linked agent artifacts | `data/sample_agent_outputs.csv` |
+| Claim ledger | Drafted claims vs. accepted claims | `data/sample_claim_ledger.csv` |
+| Evidence ledger | Formal sources and project evidence | `data/sample_evidence_ledger.csv` |
+| Validator | Schema, enums, joins, date checks, and style flags | `scripts/validate_task_fields.py` |
+| Readiness report | Evidence, rhetoric, deadline, and review queues | `scripts/generate_progress_report.py` |
+| Design note | Quality-control workflow and acceptance criteria | `docs/quality_control_design.md` |
 
-## Data Model
-
-The task tracker records workflow state. The claim ledger records what the agent wants to say. The evidence ledger records what is allowed to support that claim.
+## Data Model 🗂️
 
 ```text
 task_id
@@ -134,23 +153,33 @@ Evidence can be:
 - `missing`: required evidence has not been found
 - `internal`: suitable only for a project-design claim
 
-## Research Anchors
+## Research Anchors 📚
 
-This demo borrows patterns from formally published work on tool use, agent feedback, retrieval, hallucination checks, and agent evaluation:
+This demo borrows patterns from published work on tool use, retrieval, hallucination checks, feedback loops, and agent evaluation:
 
-- [ReAct, ICLR 2023](https://openreview.net/forum?id=WE_vluYUL-X): interleaves reasoning traces and task-specific actions so models can use external information.
-- [Toolformer, NeurIPS 2023](https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html): motivates tool use as a way to extend a language model beyond pure next-token generation.
-- [Retrieval-Augmented Generation, NeurIPS 2020](https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html): grounds generation in retrieved non-parametric memory for knowledge-intensive tasks.
-- [SelfCheckGPT, EMNLP 2023](https://aclanthology.org/2023.emnlp-main.557/): frames hallucination detection as a black-box consistency-checking problem.
-- [Reflexion, NeurIPS 2023](https://papers.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html): uses verbal feedback memory to improve repeated agent attempts.
-- [Self-Refine, NeurIPS 2023](https://proceedings.neurips.cc/paper_files/paper/2023/hash/91edff07232fb1b55a505a9e9f6c0ff3-Abstract-Conference.html): shows iterative feedback and revision, while this project adds explicit stopping and acceptance gates.
-- [AgentBench, ICLR 2024](https://proceedings.iclr.cc/paper_files/paper/2024/hash/e9df36b21ff4ee211a8b71ee8b7e9f57-Abstract-Conference.html): reports that long-term reasoning, decision-making, and instruction following remain obstacles for usable LLM agents.
+- [ReAct, ICLR 2023](https://openreview.net/forum?id=WE_vluYUL-X): reasoning plus external actions.
+- [Toolformer, NeurIPS 2023](https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html): tool use as a capability extension for language models.
+- [Retrieval-Augmented Generation, NeurIPS 2020](https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html): grounding generation in retrieved knowledge.
+- [SelfCheckGPT, EMNLP 2023](https://aclanthology.org/2023.emnlp-main.557/): black-box hallucination detection through consistency checks.
+- [Reflexion, NeurIPS 2023](https://papers.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html): verbal feedback memory for repeated agent attempts.
+- [Self-Refine, NeurIPS 2023](https://proceedings.neurips.cc/paper_files/paper/2023/hash/91edff07232fb1b55a505a9e9f6c0ff3-Abstract-Conference.html): iterative feedback and revision.
+- [AgentBench, ICLR 2024](https://proceedings.iclr.cc/paper_files/paper/2024/hash/e9df36b21ff4ee211a8b71ee8b7e9f57-Abstract-Conference.html): long-term reasoning, decision-making, and instruction following remain obstacles for usable agents.
 
-## What This Is Not
+## What This Is Not 🧯
 
-This is not an attempt to prove that one workflow solves agent reliability. The claim is narrower: repeated research expectations can be made operational by tracking claims, evidence, style issues, reviewer decisions, and deadline state as explicit workflow objects.
+This is not a claim that one workflow solves agent reliability.
 
-## Roadmap
+The narrower claim is that repeated research expectations can be made operational by tracking:
+
+- claims
+- evidence
+- style issues
+- reviewer decisions
+- deadline state
+
+In other words: make the hidden review loop visible.
+
+## Roadmap 🛠️
 
 - Add tests for claim/evidence validation rules.
 - Add CLI arguments for custom input and output paths.
