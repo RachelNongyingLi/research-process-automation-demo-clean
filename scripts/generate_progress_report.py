@@ -50,6 +50,19 @@ def build_report(
         if claim["evidence_requirement"] == "formal_publication"
         and claim["evidence_status"] != "verified"
     ]
+    literature_risks = [
+        record
+        for record in evidence
+        if record.get("verification_status") != "verified"
+        or record.get("source_age_status") in {"dated", "stale", "unknown"}
+        or record.get("venue_decision_status") in {
+            "preprint_only",
+            "rejected",
+            "unknown",
+        }
+        or record.get("source_quality_status") in {"weak", "unusable"}
+        or record.get("relevance_status") in {"contradictory", "off_topic"}
+    ]
     rhetorical_flags = [
         claim for claim in claims if claim["phrasing_status"] != "ok"
     ]
@@ -125,6 +138,21 @@ def build_report(
     else:
         lines.append("- No formal-publication evidence risks.")
 
+    lines.extend(["", "## Literature Quality Gate"])
+    if literature_risks:
+        for record in literature_risks:
+            lines.append(
+                f"- {record['evidence_id']} -> {record['claim_id']} | "
+                f"{record['title']} | year: {record['year']} | "
+                f"venue: {record['venue_decision_status']} | "
+                f"age: {record['source_age_status']} | "
+                f"quality: {record['source_quality_status']} | "
+                f"relevance: {record['relevance_status']} | "
+                f"verification: {record['verification_status']}"
+            )
+    else:
+        lines.append("- No stale, rejected, weak, or off-topic literature candidates.")
+
     lines.extend(["", "## Rhetorical Rewrite Queue"])
     if rhetorical_flags:
         for claim in rhetorical_flags:
@@ -171,7 +199,7 @@ def build_report(
     else:
         lines.append("- No blockers recorded.")
 
-    lines.extend(["", "## Verified Evidence Ledger"])
+    lines.extend(["", "## Evidence Ledger"])
     for record in evidence:
         claim = claim_lookup.get(record["claim_id"])
         if claim is None:
@@ -179,7 +207,9 @@ def build_report(
         lines.append(
             f"- {record['evidence_id']} -> {record['claim_id']} | "
             f"{record['title']} | {record['venue']} {record['year']} | "
-            f"{record['verification_status']}"
+            f"{record['verification_status']} | "
+            f"{record.get('source_quality_status', 'quality_unknown')} | "
+            f"{record.get('relevance_status', 'relevance_unknown')}"
         )
 
     return "\n".join(lines) + "\n"

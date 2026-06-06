@@ -135,6 +135,8 @@ Evidence records should include:
 - `recency`: Date the evidence was generated or last verified.
 - `relevance`: Direct, indirect, background, or contradictory.
 - `quality`: Strong, acceptable, weak, or unusable.
+- `source_age_status`: Current, foundational, dated, stale, or unknown.
+- `venue_decision_status`: Accepted, preprint-only, rejected, unknown, official, or internal.
 - `limitations`: Known gaps, missing context, or validity concerns.
 - `reviewer`: Agent or human that assessed the evidence.
 
@@ -150,6 +152,34 @@ Evidence gate rules:
 | Limitation | Source, observed failure, or missing evidence record. |
 
 If evidence is weak but the information is still useful, the output should label the statement as provisional and keep it out of decision-critical sections.
+
+## Literature Quality Gate
+
+Search is not the same as evidence. A literature-search agent can return papers that are old, only tangentially related, not formally accepted, or even known to be rejected in the relevant venue context. The workflow therefore separates candidate search hits from accepted evidence.
+
+The literature quality gate records four decisions before a source can support a claim:
+
+| Decision | Purpose |
+| --- | --- |
+| Recency | Distinguish current evidence from foundational background and stale search hits. |
+| Venue decision | Check whether the source is accepted, preprint-only, rejected, unknown, official, or internal. |
+| Source quality | Mark whether the source is strong, usable with limits, weak, or unusable. |
+| Claim relevance | Decide whether the source is direct, indirect, background, contradictory, or off-topic. |
+
+This gate does not discard older papers automatically. Some older papers are foundational and should remain in the background record. The gate blocks a problem only when the workflow tries to use stale, unaccepted, rejected, weak, or off-topic material as support for a current research claim.
+
+Recommended rules:
+
+| Condition | Workflow behavior |
+| --- | --- |
+| Foundational but old | Keep as background; do not use as direct evidence for a current claim. |
+| Current and accepted | Eligible for formal evidence review. |
+| Preprint-only | Allow as provisional background only unless the task explicitly accepts preprints. |
+| Rejected or unknown venue decision | Block from accepted evidence and escalate if the claim depends on it. |
+| Off-topic or weak relevance | Keep in search log, but exclude from the claim ledger. |
+| Contradictory evidence | Escalate to reviewer instead of hiding the disagreement. |
+
+The source log should preserve rejected candidates because they explain why an apparently productive search did not produce accepted evidence. This makes the hidden literature-review failure visible to the project owner.
 
 ## Rhetorical Pattern Drift
 
@@ -237,6 +267,20 @@ Deadline rules:
 | Human review is required but unavailable | Mark the output as pending review and exclude it from final decision sections. |
 
 The system should prefer a smaller truthful deliverable over a larger uncertain one.
+
+## Interface Layer
+
+A workflow can run as CSV files and scripts during prototyping, but real users need an interface because the main work is coordination: submitting tasks, seeing risk, approving claims, and understanding what is blocked.
+
+The minimum useful interface should include:
+
+- Task intake form with owner, due date, expected output, and acceptance criteria.
+- Gate dashboard showing claim, literature, evidence, style, review, and deadline status.
+- Literature triage queue for stale, rejected, unverified, weak, or off-topic sources.
+- Approval panel where a human can accept, request revision, downgrade claim strength, or block a deliverable.
+- Report view for weekly status, unresolved claims, evidence risks, and escalation items.
+
+For a Microsoft 365 implementation, the interface could be a Power Apps or SharePoint list front end with Power Automate flows handling approval, reminders, and escalation. For a GitHub demonstration, the interface can start as a small Streamlit app or static HTML console that reads the same ledgers.
 
 ## Deliverable Acceptance Criteria
 

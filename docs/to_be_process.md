@@ -8,14 +8,15 @@ flowchart TD
   B --> C["Agent draft or analysis"]
   C --> D["Extract material claims"]
   D --> E["Claim ledger"]
-  E --> F["Formal evidence gate"]
-  F --> G["Rhetorical rule checker"]
-  G --> H["Rotating reviewer critique"]
-  H --> I["Deadline readiness check"]
-  I --> J["Accepted deliverable"]
-  I --> K["Needs revision"]
-  I --> L["Partial delivery with visible limits"]
-  I --> M["Blocked by missing evidence or review"]
+  E --> F["Literature quality gate"]
+  F --> G["Formal evidence gate"]
+  G --> H["Rhetorical rule checker"]
+  H --> I["Rotating reviewer critique"]
+  I --> J["Deadline readiness check"]
+  J --> K["Accepted deliverable"]
+  J --> L["Needs revision"]
+  J --> M["Partial delivery with visible limits"]
+  J --> N["Blocked by missing evidence or review"]
 ```
 
 ## Expected Improvements
@@ -23,7 +24,7 @@ flowchart TD
 - Repeated research expectations become explicit skill gates.
 - Claims are reviewed before entering final reports.
 - Evidence quality is visible rather than implied by fluent prose.
+- Literature candidates are checked for recency, venue decision, source quality, and claim relevance before supporting a claim.
 - Weak rhetorical patterns are flagged and rewritten with scope and mechanism.
 - Reviewer roles are separated to reduce single-agent aesthetic drift.
 - Deadline state determines when to stop iterating and package a useful artifact.
-

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Dashboard preview for the research-agent quality gate</title>
+  <desc id="desc">A colorful dashboard mockup with task status, quality gates, literature triage, approval queue, and weekly report sections.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#0f172a" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="720" fill="#eef2f7"/>
+  <rect x="34" y="28" width="1132" height="664" rx="8" fill="#ffffff" stroke="#dbe3ec" filter="url(#shadow)"/>
+
+  <rect x="34" y="28" width="1132" height="72" rx="8" fill="#111827"/>
+  <text x="64" y="72" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700" fill="#ffffff">Research-Agent Quality Console</text>
+  <text x="890" y="72" font-family="Inter, Arial, sans-serif" font-size="14" fill="#cbd5e1">Report date: 2026-06-06</text>
+
+  <rect x="64" y="126" width="250" height="128" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="86" y="158" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#1e3a8a">Open Tasks</text>
+  <text x="86" y="216" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="800" fill="#0f172a">6</text>
+  <text x="164" y="215" font-family="Inter, Arial, sans-serif" font-size="14" fill="#334155">tracked items</text>
+
+  <rect x="344" y="126" width="250" height="128" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="366" y="158" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#92400e">Approval Queue</text>
+  <text x="366" y="216" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="800" fill="#0f172a">3</text>
+  <text x="444" y="215" font-family="Inter, Arial, sans-serif" font-size="14" fill="#334155">pending decisions</text>
+
+  <rect x="624" y="126" width="250" height="128" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="646" y="158" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#7f1d1d">Literature Risks</text>
+  <text x="646" y="216" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="800" fill="#0f172a">1</text>
+  <text x="724" y="215" font-family="Inter, Arial, sans-serif" font-size="14" fill="#334155">blocked search hit</text>
+
+  <rect x="904" y="126" width="250" height="128" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="926" y="158" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#14532d">Verified Sources</text>
+  <text x="926" y="216" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="800" fill="#0f172a">9</text>
+  <text x="1004" y="215" font-family="Inter, Arial, sans-serif" font-size="14" fill="#334155">ledger records</text>
+
+  <rect x="64" y="286" width="530" height="286" rx="8" fill="#f8fafc" stroke="#dbe3ec"/>
+  <text x="88" y="326" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="#0f172a">Gate Status</text>
+  <rect x="88" y="350" width="462" height="34" rx="8" fill="#dcfce7"/>
+  <rect x="88" y="404" width="462" height="34" rx="8" fill="#fef3c7"/>
+  <rect x="88" y="458" width="462" height="34" rx="8" fill="#fee2e2"/>
+  <rect x="88" y="512" width="462" height="34" rx="8" fill="#e0f2fe"/>
+  <text x="108" y="372" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#14532d">Claim Gate</text>
+  <text x="420" y="372" font-family="Inter, Arial, sans-serif" font-size="14" fill="#14532d">1 approved / 4 pending</text>
+  <text x="108" y="426" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#92400e">Evidence Gate</text>
+  <text x="398" y="426" font-family="Inter, Arial, sans-serif" font-size="14" fill="#92400e">2 claims need limits</text>
+  <text x="108" y="480" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#7f1d1d">Literature Gate</text>
+  <text x="396" y="480" font-family="Inter, Arial, sans-serif" font-size="14" fill="#7f1d1d">1 stale source blocked</text>
+  <text x="108" y="534" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#0c4a6e">Deadline Gate</text>
+  <text x="406" y="534" font-family="Inter, Arial, sans-serif" font-size="14" fill="#0c4a6e">2 near-term risks</text>
+
+  <rect x="624" y="286" width="530" height="286" rx="8" fill="#f8fafc" stroke="#dbe3ec"/>
+  <text x="648" y="326" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="#0f172a">Triage Queue</text>
+  <rect x="648" y="350" width="480" height="58" rx="8" fill="#fee2e2" stroke="#fecaca"/>
+  <text x="670" y="374" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#7f1d1d">S001 search log 2017</text>
+  <text x="670" y="397" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">stale, venue unknown, unusable, off-topic</text>
+  <rect x="648" y="424" width="480" height="58" rx="8" fill="#fef3c7" stroke="#fde68a"/>
+  <text x="670" y="448" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#92400e">C002 broad method claim</text>
+  <text x="670" y="471" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">needs a second source if generalized beyond the demo</text>
+  <rect x="648" y="498" width="480" height="58" rx="8" fill="#ede9fe" stroke="#ddd6fe"/>
+  <text x="670" y="522" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#5b21b6">C003 style rewrite</text>
+  <text x="670" y="545" font-family="Inter, Arial, sans-serif" font-size="13" fill="#475569">binary contrast should be rewritten with scope and mechanism</text>
+
+  <rect x="64" y="600" width="1110" height="42" rx="8" fill="#111827"/>
+  <text x="88" y="626" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#ffffff">Interface goal:</text>
+  <text x="202" y="626" font-family="Inter, Arial, sans-serif" font-size="14" fill="#cbd5e1">make the hidden review loop visible before the artifact is treated as final.</text>
+</svg>

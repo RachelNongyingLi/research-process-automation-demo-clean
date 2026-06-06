@@ -4,3 +4,4 @@ T002,Research Agent Quality Control,Verify formal published evidence for method 
 T003,Research Agent Quality Control,Rewrite binary contrast claims into qualified research claims,Nongying Li,2026-06-09,in_progress,yes,pending,high,Contains not-A-but-B style phrasing
 T004,Research Agent Quality Control,Run rotating reviewer critique to avoid single-agent aesthetic drift,Nongying Li,2026-06-14,not_started,no,not_required,medium,
 T005,Research Agent Quality Control,Freeze deadline-ready deliverable instead of open-ended iteration,Nongying Li,2026-06-18,not_started,no,not_required,medium,
+T006,Research Agent Quality Control,Triage literature search hits by recency venue decision quality and relevance,Nongying Li,2026-06-10,in_progress,yes,pending,high,Some agent-discovered sources are old unaccepted or only weakly relevant

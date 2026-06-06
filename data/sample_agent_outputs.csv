@@ -4,3 +4,4 @@ T002,evidence_agent,source_audit,"Found formal venues for ReAct, Toolformer, RAG
 T003,style_reviewer,rhetorical_rewrite,"Flagged binary contrast phrasing and proposed a qualified alternative based on mechanism and evidence.",yes
 T004,critic_agent,review_rotation,"Separated generator, evidence reviewer, style reviewer, and delivery reviewer roles to reduce one-model taste convergence.",yes
 T005,delivery_agent,timebox_plan,"Converted open-ended improvement into deadline-aware acceptance criteria and a shippable report state.",yes
+T006,literature_agent,source_triage,"Separated candidate search hits from accepted evidence by checking recency, venue decision status, source quality, and claim relevance.",yes

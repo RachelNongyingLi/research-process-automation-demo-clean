@@ -43,9 +43,13 @@ REQUIRED_EVIDENCE_FIELDS = [
     "venue",
     "year",
     "publication_type",
-    "official_url",
+    "source_location",
     "usage_role",
     "verification_status",
+    "source_age_status",
+    "venue_decision_status",
+    "source_quality_status",
+    "relevance_status",
 ]
 
 VALID_STATUSES = {"not_started", "in_progress", "blocked", "done"}
@@ -58,8 +62,39 @@ VALID_EVIDENCE_STATUSES = {"not_required", "internal", "missing", "partial", "ve
 VALID_PUBLICATION_STATUSES = {"not_required", "unknown", "peer_reviewed"}
 VALID_PHRASING_STATUSES = {"ok", "binary_contrast", "needs_qualification"}
 VALID_REVIEW_STATUSES = {"pending", "approved", "needs_rewrite", "blocked"}
-VALID_PUBLICATION_TYPES = {"conference", "journal", "workshop", "book", "official_document"}
+VALID_PUBLICATION_TYPES = {
+    "conference",
+    "journal",
+    "workshop",
+    "book",
+    "official_document",
+    "preprint",
+    "search_result",
+    "internal_log",
+}
 VALID_VERIFICATION_STATUSES = {"pending", "verified", "rejected"}
+VALID_SOURCE_AGE_STATUSES = {"current", "foundational", "dated", "stale", "unknown"}
+VALID_VENUE_DECISION_STATUSES = {
+    "accepted",
+    "preprint_only",
+    "rejected",
+    "unknown",
+    "official",
+    "internal",
+}
+VALID_SOURCE_QUALITY_STATUSES = {
+    "strong",
+    "usable_with_limits",
+    "weak",
+    "unusable",
+}
+VALID_RELEVANCE_STATUSES = {
+    "direct",
+    "indirect",
+    "background",
+    "contradictory",
+    "off_topic",
+}
 
 BINARY_CONTRAST_PATTERNS = [
     re.compile(r"\bnot\b.{0,80}\bbut\b", re.IGNORECASE),
@@ -271,6 +306,66 @@ def validate_tasks(
                 issues.append(
                     f"Evidence row {row_number}: unknown verification_status "
                     f"'{verification_status}'"
+                )
+
+            source_age_status = row.get("source_age_status", "").strip().lower()
+            if source_age_status and source_age_status not in VALID_SOURCE_AGE_STATUSES:
+                issues.append(
+                    f"Evidence row {row_number}: unknown source_age_status "
+                    f"'{source_age_status}'"
+                )
+
+            venue_decision_status = (
+                row.get("venue_decision_status", "").strip().lower()
+            )
+            if (
+                venue_decision_status
+                and venue_decision_status not in VALID_VENUE_DECISION_STATUSES
+            ):
+                issues.append(
+                    f"Evidence row {row_number}: unknown venue_decision_status "
+                    f"'{venue_decision_status}'"
+                )
+
+            source_quality_status = (
+                row.get("source_quality_status", "").strip().lower()
+            )
+            if (
+                source_quality_status
+                and source_quality_status not in VALID_SOURCE_QUALITY_STATUSES
+            ):
+                issues.append(
+                    f"Evidence row {row_number}: unknown source_quality_status "
+                    f"'{source_quality_status}'"
+                )
+
+            relevance_status = row.get("relevance_status", "").strip().lower()
+            if relevance_status and relevance_status not in VALID_RELEVANCE_STATUSES:
+                issues.append(
+                    f"Evidence row {row_number}: unknown relevance_status "
+                    f"'{relevance_status}'"
+                )
+
+            if verification_status == "verified":
+                if venue_decision_status in {"rejected", "unknown"}:
+                    issues.append(
+                        f"Evidence row {row_number}: verified evidence has unresolved "
+                        "venue decision status"
+                    )
+                if source_quality_status in {"weak", "unusable"}:
+                    issues.append(
+                        f"Evidence row {row_number}: verified evidence has weak or "
+                        "unusable quality status"
+                    )
+                if relevance_status in {"contradictory", "off_topic"}:
+                    issues.append(
+                        f"Evidence row {row_number}: verified evidence is not relevant "
+                        "to the claim"
+                    )
+
+            if venue_decision_status == "rejected" and verification_status == "verified":
+                issues.append(
+                    f"Evidence row {row_number}: rejected sources cannot be verified"
                 )
 
     return issues

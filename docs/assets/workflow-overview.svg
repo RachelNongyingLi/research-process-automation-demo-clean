@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">Research-agent quality gate workflow overview</title>
+  <desc id="desc">A colorful flowchart from research task intake through skill checklist, agent workbench, claim ledger, literature triage, evidence gate, style review, deadline check, and weekly report.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#334155"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="620" fill="#f8fafc"/>
+  <rect x="34" y="28" width="1132" height="92" rx="8" fill="#0f172a"/>
+  <text x="66" y="70" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700" fill="#ffffff">Research-Agent Quality Gate</text>
+  <text x="66" y="99" font-family="Inter, Arial, sans-serif" font-size="16" fill="#cbd5e1">Turn fluent agent drafts into traceable, evidence-aware, deadline-ready research artifacts.</text>
+
+  <rect x="50" y="155" width="165" height="95" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="73" y="190" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Research Task</text>
+  <text x="73" y="217" font-family="Inter, Arial, sans-serif" font-size="13" fill="#334155">CSV / email / Teams</text>
+
+  <rect x="265" y="155" width="165" height="95" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2" filter="url(#shadow)"/>
+  <text x="291" y="190" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Skill Checklist</text>
+  <text x="291" y="217" font-family="Inter, Arial, sans-serif" font-size="13" fill="#334155">rules before drafting</text>
+
+  <rect x="480" y="155" width="165" height="95" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2" filter="url(#shadow)"/>
+  <text x="508" y="190" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Agent Workbench</text>
+  <text x="508" y="217" font-family="Inter, Arial, sans-serif" font-size="13" fill="#334155">draft / search / critique</text>
+
+  <rect x="695" y="155" width="165" height="95" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="723" y="190" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Claim Ledger</text>
+  <text x="723" y="217" font-family="Inter, Arial, sans-serif" font-size="13" fill="#334155">scope + strength</text>
+
+  <rect x="910" y="155" width="165" height="95" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2" filter="url(#shadow)"/>
+  <text x="940" y="190" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Literature Triage</text>
+  <text x="940" y="217" font-family="Inter, Arial, sans-serif" font-size="13" fill="#334155">recency / venue / fit</text>
+
+  <rect x="265" y="355" width="165" height="95" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2" filter="url(#shadow)"/>
+  <text x="291" y="390" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Evidence Gate</text>
+  <text x="291" y="417" font-family="Inter, Arial, sans-serif" font-size="13" fill="#334155">accepted sources only</text>
+
+  <rect x="480" y="355" width="165" height="95" rx="8" fill="#fae8ff" stroke="#c026d3" stroke-width="2" filter="url(#shadow)"/>
+  <text x="508" y="390" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Style Review</text>
+  <text x="508" y="417" font-family="Inter, Arial, sans-serif" font-size="13" fill="#334155">overclaim + phrasing</text>
+
+  <rect x="695" y="355" width="165" height="95" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="723" y="390" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Deadline Check</text>
+  <text x="723" y="417" font-family="Inter, Arial, sans-serif" font-size="13" fill="#334155">ship / revise / block</text>
+
+  <rect x="910" y="355" width="165" height="95" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2" filter="url(#shadow)"/>
+  <text x="940" y="390" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Weekly Report</text>
+  <text x="940" y="417" font-family="Inter, Arial, sans-serif" font-size="13" fill="#334155">status + audit trail</text>
+
+  <rect x="695" y="505" width="380" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="723" y="541" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700" fill="#7f1d1d">Escalation Queue: missing evidence, rejected source, deadline risk</text>
+
+  <line x1="215" y1="202" x2="265" y2="202" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="430" y1="202" x2="480" y2="202" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="645" y1="202" x2="695" y2="202" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="860" y1="202" x2="910" y2="202" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M992 250 C992 305 348 302 348 355" fill="none" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="430" y1="402" x2="480" y2="402" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="645" y1="402" x2="695" y2="402" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="860" y1="402" x2="910" y2="402" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M777 450 C777 485 790 500 830 505" fill="none" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="50" y="590" font-family="Inter, Arial, sans-serif" font-size="13" fill="#64748b">Key idea: search results remain candidates until the workflow checks claim scope, source quality, and delivery risk.</text>
+</svg>
