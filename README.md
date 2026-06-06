@@ -67,9 +67,7 @@ This project is not a chatbot but a workflow control plane.
 
 Why it gets flagged:
 
-- It uses a catchy binary contrast.
-- It hides the actual mechanism.
-- It sounds stronger than the current evidence needs.
+- It uses a VERY AI and boring and annoying structure `not A but B` 
 
 Preferred rewrite:
 
@@ -280,8 +278,6 @@ The CSV + Python layer is the auditable backend. The user-facing version should 
 - Literature triage queue: stale, unaccepted, rejected, weak, or off-topic search hits.
 - Approver view: accept, request rewrite, downgrade claim strength, or block.
 - Report view: weekly status, evidence ledger, risks, and deferred work.
-
-For a Bosch-style M365 implementation, this maps naturally to Power Apps or SharePoint lists plus Power Automate approval/reminder flows. For a GitHub demo, the same interface can start as a small Streamlit dashboard or static HTML mock.
 
 ## Literature Quality Gate 🧪
 
