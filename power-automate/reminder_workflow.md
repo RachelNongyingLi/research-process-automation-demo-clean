@@ -2,25 +2,26 @@
 
 ## Business Rule
 
-If a task is not completed and the due date is within three days, a reminder should be sent to the owner.
+Reminders should be triggered by unresolved quality gates near a deadline, not only by open task status.
 
 ## Flow Logic
 
 ```text
 Daily scheduled trigger
-  -> Read open tasks
-  -> Check due date
-  -> If due date is within 3 days and status is not done
-  -> Send Teams or email reminder
-  -> Update reminder_count
+  -> Read open tasks, claim ledger, and evidence ledger
+  -> Find tasks due within 3 days
+  -> Check unresolved evidence, phrasing, approval, and review states
+  -> Route reminder to the responsible reviewer
+  -> If deadline is close and evidence is missing, mark partial or blocked
+  -> Update reminder_count and readiness status
 ```
 
 ## Example Reminder
 
 ```text
-Reminder: The task "Validate simulation output table" is due in 2 days.
-Current status: in_progress
-Owner: Nongying Li
-Next action: Upload cleaned output or mark blocker in the tracker.
+Quality gate reminder: T003 is due in 2 days.
+Issue: Claim C003 uses binary contrast phrasing.
+Required action: Rewrite into a scoped, mechanism-based claim before it can enter the final report.
+Current delivery state: needs_revision
 ```
 

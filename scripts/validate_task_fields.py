@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import csv
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -21,10 +24,47 @@ REQUIRED_AGENT_FIELDS = [
     "needs_human_review",
 ]
 
+REQUIRED_CLAIM_FIELDS = [
+    "claim_id",
+    "task_id",
+    "claim_text",
+    "claim_strength",
+    "evidence_requirement",
+    "evidence_status",
+    "publication_status",
+    "phrasing_status",
+    "review_status",
+]
+
+REQUIRED_EVIDENCE_FIELDS = [
+    "evidence_id",
+    "claim_id",
+    "title",
+    "venue",
+    "year",
+    "publication_type",
+    "official_url",
+    "usage_role",
+    "verification_status",
+]
+
 VALID_STATUSES = {"not_started", "in_progress", "blocked", "done"}
 VALID_APPROVAL_FLAGS = {"yes", "no"}
 VALID_APPROVAL_STATUSES = {"not_required", "pending", "approved", "rejected"}
 VALID_PRIORITIES = {"low", "medium", "high"}
+VALID_CLAIM_STRENGTHS = {"low", "moderate", "strong"}
+VALID_EVIDENCE_REQUIREMENTS = {"none", "project_evidence", "formal_publication"}
+VALID_EVIDENCE_STATUSES = {"not_required", "internal", "missing", "partial", "verified"}
+VALID_PUBLICATION_STATUSES = {"not_required", "unknown", "peer_reviewed"}
+VALID_PHRASING_STATUSES = {"ok", "binary_contrast", "needs_qualification"}
+VALID_REVIEW_STATUSES = {"pending", "approved", "needs_rewrite", "blocked"}
+VALID_PUBLICATION_TYPES = {"conference", "journal", "workshop", "book", "official_document"}
+VALID_VERIFICATION_STATUSES = {"pending", "verified", "rejected"}
+
+BINARY_CONTRAST_PATTERNS = [
+    re.compile(r"\bnot\b.{0,80}\bbut\b", re.IGNORECASE),
+    re.compile(r"\brather than\b", re.IGNORECASE),
+]
 
 
 def load_rows(csv_path: Path) -> list[dict[str, str]]:
@@ -40,7 +80,18 @@ def is_iso_date(value: str) -> bool:
     return True
 
 
-def validate_tasks(task_csv_path: Path, agent_csv_path: Path | None = None) -> list[str]:
+def has_binary_contrast(text: str) -> bool:
+    if "不是" in text and "而是" in text:
+        return True
+    return any(pattern.search(text) for pattern in BINARY_CONTRAST_PATTERNS)
+
+
+def validate_tasks(
+    task_csv_path: Path,
+    agent_csv_path: Path | None = None,
+    claim_csv_path: Path | None = None,
+    evidence_csv_path: Path | None = None,
+) -> list[str]:
     issues: list[str] = []
     rows = load_rows(task_csv_path)
     seen_task_ids: set[str] = set()
@@ -101,6 +152,127 @@ def validate_tasks(task_csv_path: Path, agent_csv_path: Path | None = None) -> l
                     f"Agent row {row_number}: needs_human_review must be yes or no"
                 )
 
+    seen_claim_ids: set[str] = set()
+    if claim_csv_path is not None:
+        claim_rows = load_rows(claim_csv_path)
+        for row_number, row in enumerate(claim_rows, start=2):
+            for field in REQUIRED_CLAIM_FIELDS:
+                if not row.get(field, "").strip():
+                    issues.append(
+                        f"Claim row {row_number}: missing required field '{field}'"
+                    )
+
+            claim_id = row.get("claim_id", "").strip()
+            if claim_id in seen_claim_ids:
+                issues.append(f"Claim row {row_number}: duplicate claim_id '{claim_id}'")
+            seen_claim_ids.add(claim_id)
+
+            task_id = row.get("task_id", "").strip()
+            if task_id and task_id not in seen_task_ids:
+                issues.append(
+                    f"Claim row {row_number}: task_id '{task_id}' is not in task tracker"
+                )
+
+            claim_strength = row.get("claim_strength", "").strip().lower()
+            if claim_strength and claim_strength not in VALID_CLAIM_STRENGTHS:
+                issues.append(
+                    f"Claim row {row_number}: unknown claim_strength '{claim_strength}'"
+                )
+
+            evidence_requirement = row.get("evidence_requirement", "").strip().lower()
+            if evidence_requirement and evidence_requirement not in VALID_EVIDENCE_REQUIREMENTS:
+                issues.append(
+                    f"Claim row {row_number}: unknown evidence_requirement "
+                    f"'{evidence_requirement}'"
+                )
+
+            evidence_status = row.get("evidence_status", "").strip().lower()
+            if evidence_status and evidence_status not in VALID_EVIDENCE_STATUSES:
+                issues.append(
+                    f"Claim row {row_number}: unknown evidence_status '{evidence_status}'"
+                )
+
+            publication_status = row.get("publication_status", "").strip().lower()
+            if publication_status and publication_status not in VALID_PUBLICATION_STATUSES:
+                issues.append(
+                    f"Claim row {row_number}: unknown publication_status "
+                    f"'{publication_status}'"
+                )
+
+            phrasing_status = row.get("phrasing_status", "").strip().lower()
+            if phrasing_status and phrasing_status not in VALID_PHRASING_STATUSES:
+                issues.append(
+                    f"Claim row {row_number}: unknown phrasing_status '{phrasing_status}'"
+                )
+
+            review_status = row.get("review_status", "").strip().lower()
+            if review_status and review_status not in VALID_REVIEW_STATUSES:
+                issues.append(
+                    f"Claim row {row_number}: unknown review_status '{review_status}'"
+                )
+
+            claim_text = row.get("claim_text", "")
+            if has_binary_contrast(claim_text) and phrasing_status == "ok":
+                issues.append(
+                    f"Claim row {row_number}: binary contrast pattern is not flagged"
+                )
+
+            if review_status == "approved" and phrasing_status != "ok":
+                issues.append(
+                    f"Claim row {row_number}: approved claim has unresolved phrasing"
+                )
+
+            if (
+                review_status == "approved"
+                and evidence_requirement == "formal_publication"
+                and evidence_status != "verified"
+            ):
+                issues.append(
+                    f"Claim row {row_number}: approved formal-publication claim is "
+                    "not evidence-verified"
+                )
+
+    if evidence_csv_path is not None:
+        evidence_rows = load_rows(evidence_csv_path)
+        seen_evidence_ids: set[str] = set()
+        for row_number, row in enumerate(evidence_rows, start=2):
+            for field in REQUIRED_EVIDENCE_FIELDS:
+                if not row.get(field, "").strip():
+                    issues.append(
+                        f"Evidence row {row_number}: missing required field '{field}'"
+                    )
+
+            evidence_id = row.get("evidence_id", "").strip()
+            if evidence_id in seen_evidence_ids:
+                issues.append(
+                    f"Evidence row {row_number}: duplicate evidence_id '{evidence_id}'"
+                )
+            seen_evidence_ids.add(evidence_id)
+
+            claim_id = row.get("claim_id", "").strip()
+            if claim_id and claim_id not in seen_claim_ids:
+                issues.append(
+                    f"Evidence row {row_number}: claim_id '{claim_id}' is not in claim ledger"
+                )
+
+            year = row.get("year", "").strip()
+            if year and not year.isdigit():
+                issues.append(f"Evidence row {row_number}: year must be numeric")
+
+            publication_type = row.get("publication_type", "").strip().lower()
+            if publication_type and publication_type not in VALID_PUBLICATION_TYPES:
+                issues.append(
+                    f"Evidence row {row_number}: unknown publication_type "
+                    f"'{publication_type}'"
+                )
+
+            verification_status = row.get("verification_status", "").strip().lower()
+            if verification_status and verification_status not in VALID_VERIFICATION_STATUSES:
+                issues.append(
+                    f"Evidence row {row_number}: unknown verification_status "
+                    f"'{verification_status}'"
+                )
+
     return issues
 
 
@@ -108,7 +280,14 @@ def main() -> None:
     project_root = Path(__file__).resolve().parents[1]
     task_csv_path = project_root / "data" / "sample_research_tasks.csv"
     agent_csv_path = project_root / "data" / "sample_agent_outputs.csv"
-    issues = validate_tasks(task_csv_path, agent_csv_path)
+    claim_csv_path = project_root / "data" / "sample_claim_ledger.csv"
+    evidence_csv_path = project_root / "data" / "sample_evidence_ledger.csv"
+    issues = validate_tasks(
+        task_csv_path,
+        agent_csv_path,
+        claim_csv_path,
+        evidence_csv_path,
+    )
 
     if not issues:
         print("All task records passed validation.")

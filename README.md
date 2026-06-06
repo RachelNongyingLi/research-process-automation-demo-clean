@@ -1,164 +1,77 @@
-# Research Process Automation Demo
+# Research-Agent Quality Control Workflow
 
-**A lightweight ResearchOps control plane for coordinating humans, AI agents, approvals, deadlines, and progress reports.**
+**A deadline-aware quality gate for LLM-generated research artifacts.**
 
-Research work rarely fails because nobody can write another summary. It fails because the next action is buried in a Teams message, an approval sits in someone's inbox, an Excel tracker is stale, or an agent produced a useful note that never became accountable project state.
+LLM agents can draft quickly, search broadly, and make rough progress across many research tasks. The failure mode is subtler: the output often looks finished before it is actually acceptable. It may overclaim, rely on weak or unpublished evidence, repeat a rhetorically attractive sentence pattern, drift toward the model's preferred style, or keep iterating past the point where a deadline-ready artifact is needed.
 
-This repository prototypes a small workflow system for that gap: AI agents can analyze and summarize, while an orchestration layer keeps time, ownership, approval state, reminders, and reporting grounded in a shared task record.
+This project prototypes a small control workflow for that problem. Agents produce drafts and intermediate artifacts; the workflow checks whether those artifacts satisfy research expectations before they become accepted claims, report sections, or project decisions.
 
-## Project Thesis
+## Core Problem
 
-Multi-agent systems are good at producing intermediate artifacts. They are less reliable as process owners unless the workflow around them provides:
+The project is built around six recurring failures in agent-assisted research work:
 
-- Durable state
-- Explicit ownership
-- Human approval gates
-- Deadline and reminder logic
-- Audit-friendly reporting
-- A controlled handoff between agent output and project status
-
-The core idea is simple:
-
-> Agents should produce bounded work products. The workflow layer should decide what happens next.
-
-## Scenario
-
-A research team coordinates several workstreams through email, Teams, Excel trackers, meeting notes, and agent-generated summaries. A task may need data validation, supervisor approval, a literature summary, a weekly report entry, or a reminder before a deadline.
-
-In the current process, those actions are loosely connected. The tracker may not reflect what the agent found. The supervisor may not know which claim needs approval. The owner may not get a reminder until the deadline is already missed.
-
-This demo turns that scattered coordination pattern into a structured flow:
-
-```mermaid
-flowchart LR
-  A["Research request\nForms / Teams / Email"] --> B["Workflow trigger"]
-  B --> C["Task validation"]
-  C --> D["Task tracker\nExcel / SharePoint style state"]
-  D --> E["Approval gate"]
-  D --> F["Agent module"]
-  D --> G["Reminder loop"]
-  F --> H["Structured agent output"]
-  H --> D
-  E --> D
-  G --> I["Owner notification"]
-  D --> J["Weekly report generator"]
-  J --> K["Progress report"]
-```
-
-## What This Demo Implements
-
-The current implementation is intentionally small, but it models the pieces that matter in a real process automation system.
-
-| Layer | Responsibility | Demo artifact |
+| Failure | What it looks like | Control mechanism |
 | --- | --- | --- |
-| Intake | Represent incoming research tasks as structured records | `data/sample_research_tasks.csv` |
-| Validation | Check required fields and approval consistency | `scripts/validate_task_fields.py` |
-| Agent output boundary | Store agent results as task-linked artifacts, not hidden state | `data/sample_agent_outputs.csv` |
-| Approval queue | Separate execution status from approval status | `power-automate/approval_workflow.md` |
-| Reminder loop | Flag open tasks close to due date | `scripts/generate_progress_report.py` |
-| Reporting loop | Generate a reproducible weekly status report | `reports/sample_weekly_report.md` |
-| Architecture | Explain the workflow split between M365, Python, and agents | `docs/solution_architecture.md` |
+| Expectation mismatch | The answer is fluent but ignores local research rules | Skill checklist |
+| Overclaiming | The statement is stronger than the evidence | Claim ledger |
+| Weak evidence | The claim cites memory, generic web text, or an unpublished source | Formal evidence gate |
+| Rhetorical pattern drift | The agent repeats attractive but weak frames such as binary contrast | Style rule checker |
+| Model-aesthetic convergence | Multiple agents polish toward the same taste instead of challenging assumptions | Rotating reviewer roles |
+| Deadline blindness | The system keeps improving prose instead of shipping a usable artifact | Deadline-ready delivery state |
 
-## Scope
+The key idea:
 
-This repository has two layers:
+> A polished agent output is provisional until it passes claim, evidence, style, review, and deadline gates.
 
-- **Runnable local core:** CSV-based task state, validation checks, agent-output joins, reminder eligibility, approval queue extraction, and Markdown report generation.
-- **M365 deployment blueprint:** documented Power Automate flows for intake, approval routing, reminders, tracker updates, and report distribution.
+## Why Skills Exist Here
 
-The Power Automate pieces are written as implementation notes rather than exported flow packages. The local Python core is the executable slice that simulates the same control logic against sample task records.
+Skills are not decorative prompts. In this project, a skill is a reusable operating procedure for a task family whose requirements the base LLM does not reliably satisfy by default.
 
-## Pain Points
+Examples:
 
-The demo is built around four recurring failure modes in research coordination.
+- Do not turn a narrow observation into a general method claim.
+- Use formally published sources for method claims.
+- Separate observation, inference, recommendation, and limitation.
+- Preserve uncertainty when evidence is partial.
+- Avoid a binary "not A but B" frame when the stronger research form is a scoped contrast.
+- Stop expanding the answer when the deadline requires a smaller truthful deliverable.
 
-### 1. State Is Scattered
+The workflow converts those expectations into checks that can be repeated every time, instead of rediscovering the same corrections in every conversation.
 
-Tasks arrive through messages, files, and conversations. If the system of record is not updated, nobody knows whether a task is open, blocked, approved, or ready for reporting.
+## Example Style Gate
 
-### 2. Agents Lack Process Memory
-
-An agent can summarize the latest notes, but that does not mean it owns the deadline, approval path, escalation rule, or audit trail. A good summary is not the same as durable workflow state.
-
-### 3. Approvals Are Too Informal
-
-Research reports often contain claims that should be reviewed before they are shared. If approval is just another message thread, pending approvals become invisible.
-
-### 4. Reporting Is Reconstructed By Hand
-
-Weekly reports are often rebuilt from memory, chat history, or partial tracker updates. That makes them slow to produce and hard to verify.
-
-## Design Approach
-
-This project separates the workflow into three roles.
-
-### Workflow Layer
-
-The workflow layer owns time, routing, approvals, reminders, and updates to the tracker. In a Microsoft 365 setting, this would map naturally to Power Automate flows connected to Forms, Teams, Outlook, Excel, and SharePoint.
-
-### Deterministic Python Layer
-
-Python handles logic that should be reproducible and testable:
-
-- Required field validation
-- Approval consistency checks
-- Date parsing
-- Reminder eligibility
-- Status aggregation
-- Markdown report generation
-
-### Agent Layer
-
-Agent modules are useful where language understanding helps:
-
-- Summarizing research updates
-- Extracting blockers from notes
-- Drafting report sections
-- Suggesting next actions
-- Flagging outputs that need human review
-
-Agent outputs are written back as structured records. They do not directly approve themselves, close tasks, or suppress reminders.
-
-## Related System Patterns
-
-The design borrows ideas from workflow and agent systems without copying any one framework.
-
-- **[Power Automate approvals](https://learn.microsoft.com/en-us/power-automate/modern-approvals):** process approval flows can start from a trigger, send approval requests, notify requesters, and update a SharePoint-style record after a decision.
-- **[n8n workflows](https://docs.n8n.io/integrations/builtin/node-types/):** trigger nodes start workflows, action nodes perform steps, and sub-workflow triggers support modular automation.
-- **[LangGraph interrupts and checkpoints](https://github.com/langchain-ai/langgraph/blob/main/libs/langgraph/langgraph/types.py):** human-in-the-loop workflows rely on persisted state so execution can pause, receive human input, and resume with context.
-- **[AutoGen group chat](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/design-patterns/group-chat.html):** multi-agent coordination often needs a manager that selects the next participant and keeps the conversation from becoming unstructured.
-
-This project translates those patterns into a research-process setting: the tracker is the state, approvals are explicit gates, reminders are scheduled checks, and agents are bounded contributors.
-
-## Repository Map
+Risky draft:
 
 ```text
-research-process-automation-demo/
-  README.md
-  docs/
-    problem_statement.md
-    as_is_process.md
-    to_be_process.md
-    agent_orchestration_design.md
-    automation_opportunities.md
-    solution_architecture.md
-  data/
-    sample_research_tasks.csv
-    sample_agent_outputs.csv
-  scripts/
-    validate_task_fields.py
-    generate_progress_report.py
-  reports/
-    sample_weekly_report.md
-  power-automate/
-    flow_description.md
-    approval_workflow.md
-    reminder_workflow.md
+This project is not a chatbot but a workflow control plane.
 ```
 
-## Run The Demo
+Preferred research-style rewrite:
 
-From the repository root:
+```text
+Although chatbot-style agents can produce useful drafts, research delivery also requires persistent task state, evidence checks, reviewer decisions, and deadline-aware acceptance criteria; this project therefore treats the agent as a contributor inside a workflow control layer.
+```
+
+The rewrite is longer, but it is more useful: it explains why the tempting claim exists, what additional mechanism changes the conclusion, and what scope the final claim has.
+
+## Workflow
+
+```mermaid
+flowchart TD
+  A["Research task"] --> B["Skill checklist"]
+  B --> C["Agent draft or analysis"]
+  C --> D["Claim ledger"]
+  D --> E["Formal evidence gate"]
+  E --> F["Rhetorical rule checker"]
+  F --> G["Rotating reviewer loop"]
+  G --> H["Deadline readiness check"]
+  H --> I["Accepted deliverable"]
+  H --> J["Revision / partial delivery / blocked"]
+```
+
+## Runnable Demo
+
+The local demo uses CSV ledgers and Python scripts to simulate the workflow.
 
 ```bash
 python3 scripts/validate_task_fields.py
@@ -172,63 +85,78 @@ All task records passed validation.
 Wrote .../reports/sample_weekly_report.md
 ```
 
-The generated report summarizes:
+The generated readiness report answers:
 
-- Task counts by status
-- Task counts by owner
-- Pending approvals
-- Deadline reminders
-- Agent outputs waiting for human review
-- Recorded blockers
+- Which tasks are close to deadline?
+- Which claims are still provisional?
+- Which claims have partial or missing evidence?
+- Which sentences need rhetorical rewriting?
+- Which agent outputs require human review?
+- Which claims are supported by verified formal sources?
 
-## Data Contract
+## Implemented Artifacts
 
-The task tracker is the system of record.
+| Layer | Purpose | File |
+| --- | --- | --- |
+| Task tracker | Tracks owner, status, deadline, approval, and blocker state | `data/sample_research_tasks.csv` |
+| Agent output log | Stores agent outputs as task-linked artifacts | `data/sample_agent_outputs.csv` |
+| Claim ledger | Separates drafted claims from accepted claims | `data/sample_claim_ledger.csv` |
+| Evidence ledger | Links claims to formally published sources or project evidence | `data/sample_evidence_ledger.csv` |
+| Structural validation | Checks schema, enums, task joins, claim joins, dates, and style flags | `scripts/validate_task_fields.py` |
+| Readiness report | Produces evidence, rhetoric, deadline, and review queues | `scripts/generate_progress_report.py` |
+| Design note | Specifies quality-control workflow and acceptance criteria | `docs/quality_control_design.md` |
 
-| Field | Purpose |
-| --- | --- |
-| `task_id` | Stable identifier across tasks, agent outputs, approvals, and reports |
-| `project_name` | Research workstream |
-| `task_title` | Human-readable task |
-| `owner` | Responsible person |
-| `due_date` | Reminder and reporting date |
-| `status` | Execution state, such as `not_started`, `in_progress`, or `done` |
-| `approval_needed` | Whether the task needs supervisor approval |
-| `approval_status` | Approval state, such as `pending`, `approved`, or `not_required` |
-| `priority` | Escalation signal |
-| `blocker` | Open issue preventing progress |
+## Data Model
 
-Agent outputs are stored separately and joined through `task_id`.
+The task tracker records workflow state. The claim ledger records what the agent wants to say. The evidence ledger records what is allowed to support that claim.
 
-| Field | Purpose |
-| --- | --- |
-| `task_id` | Links the agent output back to a task record |
-| `agent_name` | Agent or module that produced the output |
-| `output_type` | Kind of output, such as `weekly_summary` or `quality_check` |
-| `summary` | Short human-readable artifact summary |
-| `needs_human_review` | Whether the output should enter the review queue |
+```text
+task_id
+  -> agent outputs
+  -> claim_id
+      -> evidence_id
+      -> phrasing status
+      -> review status
+      -> deadline readiness
+```
 
-The validation script currently checks required task fields, ISO date format, allowed status values, approval consistency, priority values, duplicate task IDs, and whether agent outputs reference known tasks.
+Claims can be:
 
-## What A Production Version Would Add
+- `approved`: accepted for the intended use
+- `pending`: still under review
+- `needs_rewrite`: phrasing or claim scope is not acceptable
+- `blocked`: required evidence, review, or input is missing
 
-- SharePoint or Dataverse as the durable task store
-- Power Automate intake flow from Forms, Teams, and Outlook
-- Approval timeout and escalation rules
-- Reminder cooldown fields such as `last_reminder_at` and `reminder_count`
-- Agent review fields such as `needs_human_review` and `agent_review_status`
-- Workflow run metadata such as `workflow_run_id`, `created_at`, and `updated_at`
-- A dashboard over owner, approval, status, and blocker trends
-- Tests for validation rules and report generation
+Evidence can be:
 
-## Why This Shape
+- `verified`: checked and suitable for the current claim
+- `partial`: useful but not enough for a broad claim
+- `missing`: required evidence has not been found
+- `internal`: suitable only for a project-design claim
 
-The point is not to build another chatbot for research management. The point is to make research coordination observable.
+## Research Anchors
 
-When a task moves, the tracker changes.  
-When an approval is needed, the approval state is visible.  
-When a deadline approaches, the reminder is rule-based.  
-When an agent contributes, its output is attached to a task.  
-When a report is generated, it is reproducible from structured state.
+This demo borrows patterns from formally published work on tool use, agent feedback, retrieval, hallucination checks, and agent evaluation:
 
-That is the difference between an agent that can help and a process that can keep moving.
+- [ReAct, ICLR 2023](https://openreview.net/forum?id=WE_vluYUL-X): interleaves reasoning traces and task-specific actions so models can use external information.
+- [Toolformer, NeurIPS 2023](https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html): motivates tool use as a way to extend a language model beyond pure next-token generation.
+- [Retrieval-Augmented Generation, NeurIPS 2020](https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html): grounds generation in retrieved non-parametric memory for knowledge-intensive tasks.
+- [SelfCheckGPT, EMNLP 2023](https://aclanthology.org/2023.emnlp-main.557/): frames hallucination detection as a black-box consistency-checking problem.
+- [Reflexion, NeurIPS 2023](https://papers.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html): uses verbal feedback memory to improve repeated agent attempts.
+- [Self-Refine, NeurIPS 2023](https://proceedings.neurips.cc/paper_files/paper/2023/hash/91edff07232fb1b55a505a9e9f6c0ff3-Abstract-Conference.html): shows iterative feedback and revision, while this project adds explicit stopping and acceptance gates.
+- [AgentBench, ICLR 2024](https://proceedings.iclr.cc/paper_files/paper/2024/hash/e9df36b21ff4ee211a8b71ee8b7e9f57-Abstract-Conference.html): reports that long-term reasoning, decision-making, and instruction following remain obstacles for usable LLM agents.
+
+## What This Is Not
+
+This is not an attempt to prove that one workflow solves agent reliability. The claim is narrower: repeated research expectations can be made operational by tracking claims, evidence, style issues, reviewer decisions, and deadline state as explicit workflow objects.
+
+## Roadmap
+
+- Add tests for claim/evidence validation rules.
+- Add CLI arguments for custom input and output paths.
+- Add a small style-rule module for overclaim and rhetorical-pattern detection.
+- Add a SharePoint or Excel schema for the M365 version.
+- Add a Power Automate flow export for intake, approval, reminders, and escalation.
+- Add a reviewer-rotation log so critique roles cannot approve their own drafts.
+- Add acceptance-status fields for `accepted`, `accepted_with_limits`, `partial`, `needs_revision`, `blocked`, and `rejected`.
+

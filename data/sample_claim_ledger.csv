@@ -1,0 +1,6 @@
+claim_id,task_id,claim_text,claim_strength,evidence_requirement,evidence_status,publication_status,phrasing_status,review_status,issue
+C001,T001,"Skill and checklist layers can improve agent reliability by converting repeated project expectations into reusable constraints.",moderate,formal_publication,verified,peer_reviewed,ok,approved,
+C002,T002,"Research-agent method claims should be treated as accepted project claims only after formally published evidence has been checked.",moderate,formal_publication,partial,peer_reviewed,ok,pending,"Needs a second source if generalized beyond this demo."
+C003,T003,"This project is not a chatbot but a workflow control plane.",strong,none,not_required,not_required,binary_contrast,needs_rewrite,"Avoid not-A-but-B framing; rewrite as a qualified contrast."
+C004,T004,"Multiple agents can still converge on model-preferred prose unless critique roles and acceptance criteria are separated.",moderate,formal_publication,partial,peer_reviewed,ok,pending,"Current evidence supports agent difficulty and feedback loops, but the model-aesthetic drift claim should stay cautious."
+C005,T005,"Deadline-aware state can constrain agent work toward shippable artifacts instead of endless refinement.",moderate,project_evidence,internal,not_required,ok,pending,"Supported as a project design claim, not as a general empirical claim."

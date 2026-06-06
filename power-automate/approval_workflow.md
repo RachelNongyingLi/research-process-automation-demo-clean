@@ -2,26 +2,29 @@
 
 ## Business Rule
 
-If `approval_needed` is `yes`, the task should be routed to the supervisor before analysis or reporting starts.
+Approval is required when a claim affects a report decision, has high impact, has partial evidence, or has unresolved rhetorical/overclaim flags. The approval target is the artifact or claim, not just the task row.
 
 ## Flow Logic
 
 ```text
-New task created
-  -> Check approval_needed
-  -> If yes, send approval request
-  -> Wait for approval response
-  -> Update approval_status
-  -> Notify owner
+Agent output submitted
+  -> Extract claim ledger entries
+  -> Check evidence_status, phrasing_status, and claim_strength
+  -> If risk is high or approval_needed = yes
+  -> Send approval request to supervisor or assigned reviewer
+  -> Wait for approve / revise / reject / defer
+  -> Update review_status and approval_status
+  -> Notify task owner with required revision or accepted scope
 ```
 
 ## Example Approval Message
 
 ```text
-Project: Causal Inference Literature Review
-Task: Prepare benchmark comparison table
-Owner: Research Assistant
-Due date: 2026-06-14
-Reason for approval: Supervisor confirmation required before reporting benchmark claims.
+Project: Research Agent Quality Control
+Task: Verify formal published evidence for method claims
+Claim: Research-agent method claims should be treated as accepted project claims only after formally published evidence has been checked.
+Evidence status: partial
+Phrasing status: ok
+Requested decision: approve with limits, request another source, or defer the claim.
 ```
 

@@ -1,5 +1,6 @@
 task_id,agent_name,output_type,summary,needs_human_review
-T002,workflow_planner,process_map,"Drafted To-Be workflow with trigger, validation, approval, reminder, and reporting steps.",yes
-T003,reporting_agent,weekly_summary,"Summarized open tasks and identified approval blocker.",yes
-T004,analysis_agent,quality_check,"Prepared checklist for validating simulation outputs.",yes
-
+T001,skill_agent,skill_checklist,"Converted repeated writing expectations into reusable checks for claim strength, evidence type, and phrasing.",yes
+T002,evidence_agent,source_audit,"Found formal venues for ReAct, Toolformer, RAG, Reflexion, Self-Refine, SelfCheckGPT, and AgentBench.",yes
+T003,style_reviewer,rhetorical_rewrite,"Flagged binary contrast phrasing and proposed a qualified alternative based on mechanism and evidence.",yes
+T004,critic_agent,review_rotation,"Separated generator, evidence reviewer, style reviewer, and delivery reviewer roles to reduce one-model taste convergence.",yes
+T005,delivery_agent,timebox_plan,"Converted open-ended improvement into deadline-aware acceptance criteria and a shippable report state.",yes

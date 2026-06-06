@@ -15,6 +15,8 @@ DEMO_REPORT_DATE = date(2026, 6, 6)
 def build_report(
     rows: list[dict[str, str]],
     agent_outputs: list[dict[str, str]],
+    claims: list[dict[str, str]],
+    evidence: list[dict[str, str]],
     report_date: date = DEMO_REPORT_DATE,
 ) -> str:
     status_counts = Counter(row["status"] for row in rows)
@@ -30,6 +32,27 @@ def build_report(
         if output.get("needs_human_review", "").lower() == "yes"
         and output.get("task_id") in task_lookup
     ]
+    claim_lookup = {claim["claim_id"]: claim for claim in claims}
+    evidence_by_claim: dict[str, list[dict[str, str]]] = {}
+    for record in evidence:
+        evidence_by_claim.setdefault(record["claim_id"], []).append(record)
+
+    unresolved_claims = [
+        claim
+        for claim in claims
+        if claim["review_status"] != "approved"
+        or claim["evidence_status"] in {"missing", "partial"}
+        or claim["phrasing_status"] != "ok"
+    ]
+    evidence_risks = [
+        claim
+        for claim in claims
+        if claim["evidence_requirement"] == "formal_publication"
+        and claim["evidence_status"] != "verified"
+    ]
+    rhetorical_flags = [
+        claim for claim in claims if claim["phrasing_status"] != "ok"
+    ]
     upcoming = [
         row for row in rows
         if row["status"] != "done"
@@ -39,7 +62,7 @@ def build_report(
     ]
 
     lines = [
-        "# Sample Weekly Research Progress Report",
+        "# Sample Research-Agent Readiness Report",
         "",
         f"Report date: {report_date.isoformat()}",
         "",
@@ -73,6 +96,61 @@ def build_report(
     else:
         lines.append("- No open tasks due within three days.")
 
+    lines.extend(["", "## Claim Quality Gate"])
+    if unresolved_claims:
+        for claim in unresolved_claims:
+            evidence_count = len(evidence_by_claim.get(claim["claim_id"], []))
+            lines.append(
+                f"- {claim['claim_id']} | task {claim['task_id']} | "
+                f"review: {claim['review_status']} | evidence: {claim['evidence_status']} | "
+                f"phrasing: {claim['phrasing_status']} | sources: {evidence_count}"
+            )
+            if claim.get("issue", "").strip():
+                lines.append(f"  - action: {claim['issue']}")
+    else:
+        lines.append("- All tracked claims are approved.")
+
+    lines.extend(["", "## Evidence Gate"])
+    if evidence_risks:
+        for claim in evidence_risks:
+            evidence_records = evidence_by_claim.get(claim["claim_id"], [])
+            source_labels = [
+                f"{record['venue']} {record['year']}" for record in evidence_records
+            ]
+            sources = ", ".join(source_labels) if source_labels else "no formal source"
+            lines.append(
+                f"- {claim['claim_id']} | {claim['claim_strength']} claim | "
+                f"{claim['evidence_status']} | {sources}"
+            )
+    else:
+        lines.append("- No formal-publication evidence risks.")
+
+    lines.extend(["", "## Rhetorical Rewrite Queue"])
+    if rhetorical_flags:
+        for claim in rhetorical_flags:
+            lines.append(f"- {claim['claim_id']}: {claim['claim_text']}")
+            lines.append(
+                "  - rewrite target: qualify the contrast through mechanism, scope, "
+                "and evidence instead of using a not-A-but-B frame."
+            )
+    else:
+        lines.append("- No rhetorical pattern flags.")
+
+    lines.extend(["", "## Deadline Delivery Risks"])
+    if upcoming:
+        for row in upcoming:
+            task_claims = [
+                claim for claim in unresolved_claims if claim["task_id"] == row["task_id"]
+            ]
+            if task_claims:
+                claim_ids = ", ".join(claim["claim_id"] for claim in task_claims)
+                lines.append(
+                    f"- {row['task_id']} | due {row['due_date']} | unresolved claims: "
+                    f"{claim_ids} | blocker: {row.get('blocker', '') or 'none'}"
+                )
+    else:
+        lines.append("- No deadline delivery risks.")
+
     lines.extend(["", "## Agent Review Queue"])
     if review_queue:
         for output in review_queue:
@@ -93,6 +171,17 @@ def build_report(
     else:
         lines.append("- No blockers recorded.")
 
+    lines.extend(["", "## Verified Evidence Ledger"])
+    for record in evidence:
+        claim = claim_lookup.get(record["claim_id"])
+        if claim is None:
+            continue
+        lines.append(
+            f"- {record['evidence_id']} -> {record['claim_id']} | "
+            f"{record['title']} | {record['venue']} {record['year']} | "
+            f"{record['verification_status']}"
+        )
+
     return "\n".join(lines) + "\n"
 
 
@@ -100,7 +189,9 @@ def main() -> None:
     project_root = Path(__file__).resolve().parents[1]
     rows = load_rows(project_root / "data" / "sample_research_tasks.csv")
     agent_outputs = load_rows(project_root / "data" / "sample_agent_outputs.csv")
-    report = build_report(rows, agent_outputs)
+    claims = load_rows(project_root / "data" / "sample_claim_ledger.csv")
+    evidence = load_rows(project_root / "data" / "sample_evidence_ledger.csv")
+    report = build_report(rows, agent_outputs, claims, evidence)
     output_path = project_root / "reports" / "sample_weekly_report.md"
     output_path.write_text(report, encoding="utf-8")
     print(f"Wrote {output_path}")

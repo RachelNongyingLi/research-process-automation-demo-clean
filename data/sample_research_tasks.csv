@@ -1,6 +1,6 @@
 task_id,project_name,task_title,owner,due_date,status,approval_needed,approval_status,priority,blocker
-T001,Research Process Automation,Define As-Is process,Nongying Li,2026-06-09,done,no,not_required,medium,
-T002,Research Process Automation,Create To-Be workflow,Nongying Li,2026-06-08,in_progress,no,not_required,high,
-T003,CALE Research,Prepare weekly progress report,Nongying Li,2026-06-09,in_progress,yes,pending,high,Waiting for supervisor approval
-T004,VAE Imputation Study,Validate simulation output table,Nongying Li,2026-06-14,not_started,yes,pending,medium,
-T005,NLP Relation Extraction,Summarize model comparison,Nongying Li,2026-06-18,not_started,no,not_required,low,
+T001,Research Agent Quality Control,Define reusable skill checklist for claim discipline,Nongying Li,2026-06-09,in_progress,no,not_required,high,
+T002,Research Agent Quality Control,Verify formal published evidence for method claims,Nongying Li,2026-06-08,in_progress,yes,pending,high,Need one more peer-reviewed source for broad method claim
+T003,Research Agent Quality Control,Rewrite binary contrast claims into qualified research claims,Nongying Li,2026-06-09,in_progress,yes,pending,high,Contains not-A-but-B style phrasing
+T004,Research Agent Quality Control,Run rotating reviewer critique to avoid single-agent aesthetic drift,Nongying Li,2026-06-14,not_started,no,not_required,medium,
+T005,Research Agent Quality Control,Freeze deadline-ready deliverable instead of open-ended iteration,Nongying Li,2026-06-18,not_started,no,not_required,medium,
