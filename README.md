@@ -87,6 +87,12 @@ python3 scripts/validate_task_fields.py
 python3 scripts/generate_progress_report.py
 ```
 
+Or run the complete local demo:
+
+```bash
+python3 scripts/run_demo.py
+```
+
 Expected output:
 
 ```text
@@ -103,6 +109,31 @@ The generated readiness report answers:
 - Which agent outputs require human review?
 - Which formal sources support which claims?
 - Which literature hits are stale, rejected, unverified, or off-topic?
+
+The demo also writes a static dashboard to `docs/dashboard.html`.
+
+## Implementation Status
+
+This repository is a working **quality-gate PoC**, not a production LLM agent platform yet.
+
+What is implemented now:
+
+- CSV ledgers for tasks, agent outputs, claims, evidence, agent roles, and handoffs.
+- Python validation for required fields, enums, dates, joins, evidence consistency, and agent approval boundaries.
+- Python report generation for approval queues, deadline risks, claim quality, evidence risks, literature triage, handoff state, and blockers.
+- Microsoft 365 / Power Automate architecture blueprints for intake, approval, reminders, reporting, and escalation.
+
+What is intentionally still a design or next-step integration:
+
+- Live LLM calls, prompt runners, or an agent runtime.
+- RAG indexing, embeddings, retriever code, or a vector database.
+- Model evaluation results comparing specific LLMs.
+- Cloud model deployment, Docker/server packaging, or importable Power Automate exports.
+- Human team contribution records beyond the sample project owner.
+
+For interview prep and project review, see `docs/interview_qa_playbook.md`, `docs/implementation_roadmap_with_papers.md`, `docs/model_rag_deployment_plan.md`, and `docs/team_contributions.md`.
+
+For a step-by-step local demo script, see `docs/demo_walkthrough.md`.
 
 ## Visual Walkthrough 🖼️
 

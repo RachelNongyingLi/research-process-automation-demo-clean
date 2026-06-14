@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research-Agent Quality Gate Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --line: #d8dee8;
+      --text: #172033;
+      --muted: #667085;
+      --blue: #2563eb;
+      --green: #0f8a5f;
+      --amber: #b45309;
+      --red: #b42318;
+      --teal: #0f766e;
+      --gray: #5f6b7a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      padding: 22px 28px;
+    }
+    main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 28px 40px;
+    }
+    h1, h2 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+    h1 { font-size: 28px; font-weight: 760; }
+    h2 { font-size: 18px; font-weight: 720; }
+    .subline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+      color: var(--muted);
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(130px, 1fr));
+      gap: 12px;
+      margin: 0 0 18px;
+    }
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--blue);
+      border-radius: 8px;
+      padding: 14px 14px 12px;
+      min-height: 88px;
+    }
+    .metric.good { border-left-color: var(--green); }
+    .metric.warn { border-left-color: var(--amber); }
+    .metric.bad { border-left-color: var(--red); }
+    .metric.neutral { border-left-color: var(--gray); }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 34px;
+    }
+    .metric strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 30px;
+      line-height: 1;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
+      gap: 16px;
+    }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    section > h2 {
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+    .section-body { padding: 16px; }
+    .bar-row + .bar-row { margin-top: 12px; }
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .bar-label strong { color: var(--text); }
+    .bar-track {
+      height: 10px;
+      background: #edf1f7;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: var(--blue);
+    }
+    .bar-fill.good { background: var(--green); }
+    .bar-fill.warn { background: var(--amber); }
+    .bar-fill.bad { background: var(--red); }
+    .bar-fill.neutral { background: var(--gray); }
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e7ebf1;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 720;
+      text-transform: uppercase;
+      background: #fbfcfe;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 680;
+      white-space: nowrap;
+      background: #e8eefb;
+      color: #21468f;
+    }
+    .badge.good { background: #dcfce7; color: var(--green); }
+    .badge.warn { background: #fef3c7; color: var(--amber); }
+    .badge.bad { background: #fee2e2; color: var(--red); }
+    .badge.neutral { background: #edf1f7; color: var(--gray); }
+    .empty { margin: 0; color: var(--muted); }
+    .full { grid-column: 1 / -1; }
+    @media (max-width: 1000px) {
+      .metrics { grid-template-columns: repeat(3, minmax(130px, 1fr)); }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 620px) {
+      header, main { padding-left: 16px; padding-right: 16px; }
+      h1 { font-size: 23px; }
+      .metrics { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      .metric strong { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Research-Agent Quality Gate</h1>
+    <div class="subline">
+      <span>Report date: 2026-06-06</span>
+      <span>CSV ledgers + Python gates</span>
+      <span>No live LLM/RAG runtime in this PoC</span>
+    </div>
+  </header>
+  <main>
+    <div class="metrics" data-testid="dashboard-metrics">
+      
+      <div class="metric info">
+        <span>Tasks</span>
+        <strong>6</strong>
+      </div>
+    
+      
+      <div class="metric warn">
+        <span>Pending approvals</span>
+        <strong>3</strong>
+      </div>
+    
+      
+      <div class="metric warn">
+        <span>Unresolved claims</span>
+        <strong>4</strong>
+      </div>
+    
+      
+      <div class="metric bad">
+        <span>Evidence risks</span>
+        <strong>2</strong>
+      </div>
+    
+      
+      <div class="metric bad">
+        <span>Literature risks</span>
+        <strong>1</strong>
+      </div>
+    
+      
+      <div class="metric warn">
+        <span>Open handoffs</span>
+        <strong>4</strong>
+      </div>
+    
+    </div>
+
+    <div class="grid">
+      <section data-testid="status-distribution">
+        <h2>Status Distribution</h2>
+        <div class="section-body">
+      <div class="bar-row">
+        <div class="bar-label"><span>in_progress</span><strong>4</strong></div>
+        <div class="bar-track"><div class="bar-fill info" style="width:66%"></div></div>
+      </div>
+    
+
+      <div class="bar-row">
+        <div class="bar-label"><span>not_started</span><strong>2</strong></div>
+        <div class="bar-track"><div class="bar-fill info" style="width:33%"></div></div>
+      </div>
+    </div>
+      </section>
+      <section data-testid="deadline-queue">
+        <h2>Deadline Queue</h2>
+        
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task</th><th>Title</th><th>Status</th><th>Approval</th><th>Priority</th><th>Blocker</th></tr></thead>
+          <tbody><tr><td><strong>T001</strong></td><td>Define reusable skill checklist for claim discipline</td><td><span class="badge info">in_progress</span></td><td><span class="badge neutral">not_required</span></td><td><span class="badge info">high</span></td><td>-</td></tr>
+<tr><td><strong>T002</strong></td><td>Verify formal published evidence for method claims</td><td><span class="badge info">in_progress</span></td><td><span class="badge warn">pending</span></td><td><span class="badge info">high</span></td><td>Need one more peer-reviewed source for broad method claim</td></tr>
+<tr><td><strong>T003</strong></td><td>Rewrite binary contrast claims into qualified research claims</td><td><span class="badge info">in_progress</span></td><td><span class="badge warn">pending</span></td><td><span class="badge info">high</span></td><td>Contains not-A-but-B style phrasing</td></tr></tbody>
+        </table>
+      </div>
+    
+      </section>
+      <section data-testid="approval-queue">
+        <h2>Approval Queue</h2>
+        
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task</th><th>Title</th><th>Approval</th><th>Blocker</th></tr></thead>
+          <tbody><tr><td><strong>T002</strong></td><td>Verify formal published evidence for method claims</td><td><span class="badge warn">pending</span></td><td>Need one more peer-reviewed source for broad method claim</td></tr>
+<tr><td><strong>T003</strong></td><td>Rewrite binary contrast claims into qualified research claims</td><td><span class="badge warn">pending</span></td><td>Contains not-A-but-B style phrasing</td></tr>
+<tr><td><strong>T006</strong></td><td>Triage literature search hits by recency venue decision quality and relevance</td><td><span class="badge warn">pending</span></td><td>Some agent-discovered sources are old unaccepted or only weakly relevant</td></tr></tbody>
+        </table>
+      </div>
+    
+      </section>
+      <section data-testid="agent-review-queue">
+        <h2>Agent Review Queue</h2>
+        
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task</th><th>Agent</th><th>Output</th><th>Summary</th></tr></thead>
+          <tbody><tr><td><strong>T001</strong></td><td>skill_agent</td><td><span class="badge info">skill_checklist</span></td><td>Converted repeated writing expectations into reusable checks for claim strength, evidence type, and phrasing.</td></tr>
+<tr><td><strong>T002</strong></td><td>evidence_agent</td><td><span class="badge info">source_audit</span></td><td>Found formal venues for ReAct, Toolformer, RAG, Reflexion, Self-Refine, SelfCheckGPT, and AgentBench.</td></tr>
+<tr><td><strong>T003</strong></td><td>style_reviewer</td><td><span class="badge info">rhetorical_rewrite</span></td><td>Flagged binary contrast phrasing and proposed a qualified alternative based on mechanism and evidence.</td></tr>
+<tr><td><strong>T004</strong></td><td>critic_agent</td><td><span class="badge info">review_rotation</span></td><td>Separated generator, evidence reviewer, style reviewer, and delivery reviewer roles to reduce one-model taste convergence.</td></tr>
+<tr><td><strong>T005</strong></td><td>delivery_agent</td><td><span class="badge info">timebox_plan</span></td><td>Converted open-ended improvement into deadline-aware acceptance criteria and a shippable report state.</td></tr>
+<tr><td><strong>T006</strong></td><td>literature_agent</td><td><span class="badge info">source_triage</span></td><td>Separated candidate search hits from accepted evidence by checking recency, venue decision status, source quality, and claim relevance.</td></tr></tbody>
+        </table>
+      </div>
+    
+      </section>
+      <section class="full" data-testid="claim-gate">
+        <h2>Claim Gate</h2>
+        
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Claim</th><th>Task</th><th>Text</th><th>Evidence</th><th>Phrasing</th><th>Review</th><th>Action</th></tr></thead>
+          <tbody><tr><td><strong>C002</strong></td><td>T002</td><td>Research-agent method claims should be treated as accepted project claims only after formally published evidence has been checked.</td><td><span class="badge warn">partial</span></td><td><span class="badge good">ok</span></td><td><span class="badge warn">pending</span></td><td>Needs a second source if generalized beyond this demo.</td></tr>
+<tr><td><strong>C003</strong></td><td>T003</td><td>This project is not a chatbot but a workflow control plane.</td><td><span class="badge neutral">not_required</span></td><td><span class="badge info">binary_contrast</span></td><td><span class="badge warn">needs_rewrite</span></td><td>Avoid not-A-but-B framing; rewrite as a qualified contrast.</td></tr>
+<tr><td><strong>C004</strong></td><td>T004</td><td>Multiple agents can still converge on model-preferred prose unless critique roles and acceptance criteria are separated.</td><td><span class="badge warn">partial</span></td><td><span class="badge good">ok</span></td><td><span class="badge warn">pending</span></td><td>Current evidence supports agent difficulty and feedback loops, but the model-aesthetic drift claim should stay cautious.</td></tr>
+<tr><td><strong>C005</strong></td><td>T005</td><td>Deadline-aware state can constrain agent work toward shippable artifacts instead of endless refinement.</td><td><span class="badge neutral">internal</span></td><td><span class="badge good">ok</span></td><td><span class="badge warn">pending</span></td><td>Supported as a project design claim, not as a general empirical claim.</td></tr></tbody>
+        </table>
+      </div>
+    
+      </section>
+      <section class="full" data-testid="evidence-gate">
+        <h2>Evidence Gate</h2>
+        
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Claim</th><th>Strength</th><th>Evidence</th><th>Sources</th></tr></thead>
+          <tbody><tr><td><strong>C002</strong></td><td><span class="badge info">moderate</span></td><td><span class="badge warn">partial</span></td><td>NeurIPS 2020, EMNLP 2023</td></tr>
+<tr><td><strong>C004</strong></td><td><span class="badge info">moderate</span></td><td><span class="badge warn">partial</span></td><td>ICLR 2024, NeurIPS 2023</td></tr></tbody>
+        </table>
+      </div>
+    
+      </section>
+      <section class="full" data-testid="literature-gate">
+        <h2>Literature Gate</h2>
+        
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Evidence</th><th>Title</th><th>Verification</th><th>Age</th><th>Venue</th><th>Quality</th><th>Relevance</th></tr></thead>
+          <tbody><tr><td><strong>S001</strong></td><td>Unverified old search hit returned by an agent literature search</td><td><span class="badge bad">rejected</span></td><td><span class="badge info">stale</span></td><td><span class="badge info">unknown</span></td><td><span class="badge bad">unusable</span></td><td><span class="badge bad">off_topic</span></td></tr></tbody>
+        </table>
+      </div>
+    
+      </section>
+      <section class="full" data-testid="handoff-trail">
+        <h2>Handoff Trail</h2>
+        
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Handoff</th><th>Route</th><th>Type</th><th>Status</th><th>Impact</th></tr></thead>
+          <tbody><tr><td><strong>H005</strong></td><td>evidence_agent -&gt; orchestrator_agent</td><td><span class="badge info">return_to_manager</span></td><td><span class="badge warn">needs_revision</span></td><td>blocks_broad_claim</td></tr>
+<tr><td><strong>H007</strong></td><td>draft_agent -&gt; critic_agent</td><td><span class="badge info">peer_review</span></td><td><span class="badge warn">pending</span></td><td>requires_independent_review</td></tr>
+<tr><td><strong>H008</strong></td><td>orchestrator_agent -&gt; delivery_agent</td><td><span class="badge info">manager_call</span></td><td><span class="badge warn">pending</span></td><td>enables_shipment_decision</td></tr>
+<tr><td><strong>H009</strong></td><td>delivery_agent -&gt; human_owner</td><td><span class="badge info">human_approval</span></td><td><span class="badge warn">pending</span></td><td>final_delivery_control</td></tr></tbody>
+        </table>
+      </div>
+    
+      </section>
+      <section class="full" data-testid="agent-roles">
+        <h2>Agent Role Boundaries</h2>
+        
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Agent</th><th>Role</th><th>Input</th><th>Output</th><th>Approval Boundary</th></tr></thead>
+          <tbody><tr><td><strong>orchestrator_agent</strong></td><td><span class="badge info">orchestrator</span></td><td>task_record</td><td>delivery_decision</td><td>human_owner</td></tr>
+<tr><td><strong>skill_agent</strong></td><td><span class="badge info">worker</span></td><td>task_record</td><td>skill_checklist</td><td>orchestrator_agent</td></tr>
+<tr><td><strong>draft_agent</strong></td><td><span class="badge info">worker</span></td><td>skill_checklist</td><td>draft_artifact</td><td>critic_agent</td></tr>
+<tr><td><strong>literature_agent</strong></td><td><span class="badge info">worker</span></td><td>claim_record</td><td>literature_candidate_set</td><td>evidence_agent</td></tr>
+<tr><td><strong>evidence_agent</strong></td><td><span class="badge info">reviewer</span></td><td>literature_candidate_set</td><td>evidence_decision</td><td>orchestrator_agent</td></tr>
+<tr><td><strong>style_reviewer</strong></td><td><span class="badge info">reviewer</span></td><td>draft_artifact</td><td>style_review</td><td>orchestrator_agent</td></tr>
+<tr><td><strong>critic_agent</strong></td><td><span class="badge info">reviewer</span></td><td>draft_artifact</td><td>critique_record</td><td>orchestrator_agent</td></tr>
+<tr><td><strong>delivery_agent</strong></td><td><span class="badge info">delivery_owner</span></td><td>gate_summary</td><td>delivery_package</td><td>human_owner</td></tr>
+<tr><td><strong>human_owner</strong></td><td><span class="badge info">approver</span></td><td>delivery_package</td><td>approval_decision</td><td>none</td></tr></tbody>
+        </table>
+      </div>
+    
+      </section>
+      <section class="full" data-testid="task-ledger">
+        <h2>Task Ledger</h2>
+        
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task</th><th>Title</th><th>Status</th><th>Approval</th><th>Priority</th><th>Blocker</th></tr></thead>
+          <tbody><tr><td><strong>T001</strong></td><td>Define reusable skill checklist for claim discipline</td><td><span class="badge info">in_progress</span></td><td><span class="badge neutral">not_required</span></td><td><span class="badge info">high</span></td><td>-</td></tr>
+<tr><td><strong>T002</strong></td><td>Verify formal published evidence for method claims</td><td><span class="badge info">in_progress</span></td><td><span class="badge warn">pending</span></td><td><span class="badge info">high</span></td><td>Need one more peer-reviewed source for broad method claim</td></tr>
+<tr><td><strong>T003</strong></td><td>Rewrite binary contrast claims into qualified research claims</td><td><span class="badge info">in_progress</span></td><td><span class="badge warn">pending</span></td><td><span class="badge info">high</span></td><td>Contains not-A-but-B style phrasing</td></tr>
+<tr><td><strong>T004</strong></td><td>Run rotating reviewer critique to avoid single-agent aesthetic drift</td><td><span class="badge info">not_started</span></td><td><span class="badge neutral">not_required</span></td><td><span class="badge info">medium</span></td><td>-</td></tr>
+<tr><td><strong>T005</strong></td><td>Freeze deadline-ready deliverable instead of open-ended iteration</td><td><span class="badge info">not_started</span></td><td><span class="badge neutral">not_required</span></td><td><span class="badge info">medium</span></td><td>-</td></tr>
+<tr><td><strong>T006</strong></td><td>Triage literature search hits by recency venue decision quality and relevance</td><td><span class="badge info">in_progress</span></td><td><span class="badge warn">pending</span></td><td><span class="badge info">high</span></td><td>Some agent-discovered sources are old unaccepted or only weakly relevant</td></tr></tbody>
+        </table>
+      </div>
+    
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import argparse
 import csv
 from collections import Counter
 from datetime import date, datetime
@@ -10,6 +13,21 @@ def load_rows(csv_path: Path) -> list[dict[str, str]]:
 
 
 DEMO_REPORT_DATE = date(2026, 6, 6)
+
+
+def default_project_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def ledger_paths(data_dir: Path) -> dict[str, Path]:
+    return {
+        "tasks": data_dir / "sample_research_tasks.csv",
+        "agent_outputs": data_dir / "sample_agent_outputs.csv",
+        "claims": data_dir / "sample_claim_ledger.csv",
+        "evidence": data_dir / "sample_evidence_ledger.csv",
+        "agent_roles": data_dir / "sample_agent_roles.csv",
+        "handoffs": data_dir / "sample_handoff_ledger.csv",
+    }
 
 
 def build_report(
@@ -266,16 +284,51 @@ def build_report(
     return "\n".join(lines) + "\n"
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Generate a readiness report from quality-gate CSV ledgers."
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=default_project_root() / "data",
+        help="Directory containing the sample_* ledger CSV files.",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=default_project_root() / "reports" / "sample_weekly_report.md",
+        help="Markdown report path to write.",
+    )
+    parser.add_argument(
+        "--report-date",
+        type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
+        default=DEMO_REPORT_DATE,
+        help="Report date in YYYY-MM-DD format.",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    rows = load_rows(project_root / "data" / "sample_research_tasks.csv")
-    agent_outputs = load_rows(project_root / "data" / "sample_agent_outputs.csv")
-    claims = load_rows(project_root / "data" / "sample_claim_ledger.csv")
-    evidence = load_rows(project_root / "data" / "sample_evidence_ledger.csv")
-    agent_roles = load_rows(project_root / "data" / "sample_agent_roles.csv")
-    handoffs = load_rows(project_root / "data" / "sample_handoff_ledger.csv")
-    report = build_report(rows, agent_outputs, claims, evidence, agent_roles, handoffs)
-    output_path = project_root / "reports" / "sample_weekly_report.md"
+    args = parse_args()
+    paths = ledger_paths(args.data_dir)
+    rows = load_rows(paths["tasks"])
+    agent_outputs = load_rows(paths["agent_outputs"])
+    claims = load_rows(paths["claims"])
+    evidence = load_rows(paths["evidence"])
+    agent_roles = load_rows(paths["agent_roles"])
+    handoffs = load_rows(paths["handoffs"])
+    report = build_report(
+        rows,
+        agent_outputs,
+        claims,
+        evidence,
+        agent_roles,
+        handoffs,
+        args.report_date,
+    )
+    output_path = args.output
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(report, encoding="utf-8")
     print(f"Wrote {output_path}")
 

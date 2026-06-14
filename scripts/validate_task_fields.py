@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import argparse
 import csv
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -146,6 +148,21 @@ BINARY_CONTRAST_PATTERNS = [
     re.compile(r"\bnot\b.{0,80}\bbut\b", re.IGNORECASE),
     re.compile(r"\brather than\b", re.IGNORECASE),
 ]
+
+
+def default_project_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def ledger_paths(data_dir: Path) -> dict[str, Path]:
+    return {
+        "tasks": data_dir / "sample_research_tasks.csv",
+        "agent_outputs": data_dir / "sample_agent_outputs.csv",
+        "claims": data_dir / "sample_claim_ledger.csv",
+        "evidence": data_dir / "sample_evidence_ledger.csv",
+        "agent_roles": data_dir / "sample_agent_roles.csv",
+        "handoffs": data_dir / "sample_handoff_ledger.csv",
+    }
 
 
 def load_rows(csv_path: Path) -> list[dict[str, str]]:
@@ -557,31 +574,40 @@ def validate_tasks(
     return issues
 
 
-def main() -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    task_csv_path = project_root / "data" / "sample_research_tasks.csv"
-    agent_csv_path = project_root / "data" / "sample_agent_outputs.csv"
-    claim_csv_path = project_root / "data" / "sample_claim_ledger.csv"
-    evidence_csv_path = project_root / "data" / "sample_evidence_ledger.csv"
-    agent_roles_csv_path = project_root / "data" / "sample_agent_roles.csv"
-    handoff_csv_path = project_root / "data" / "sample_handoff_ledger.csv"
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Validate research-agent quality-gate CSV ledgers."
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=default_project_root() / "data",
+        help="Directory containing the sample_* ledger CSV files.",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    paths = ledger_paths(args.data_dir)
     issues = validate_tasks(
-        task_csv_path,
-        agent_csv_path,
-        claim_csv_path,
-        evidence_csv_path,
-        agent_roles_csv_path,
-        handoff_csv_path,
+        paths["tasks"],
+        paths["agent_outputs"],
+        paths["claims"],
+        paths["evidence"],
+        paths["agent_roles"],
+        paths["handoffs"],
     )
 
     if not issues:
         print("All task records passed validation.")
-        return
+        return 0
 
     print("Validation issues:")
     for issue in issues:
         print(f"- {issue}")
+    return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
